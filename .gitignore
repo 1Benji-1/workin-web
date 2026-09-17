@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+.turbo
+.vercel
+supabase/.branches
+supabase/.temp
+repomix-output.xml
