@@ -59,14 +59,16 @@ export function useOrders(options: UseOrdersOptions = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (silent = false) => {
     if (!user) {
       setOrders([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const { data, error: sErr } = await getOrdersByUser(
@@ -139,6 +141,49 @@ export function useOrders(options: UseOrdersOptions = {}) {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  // Suscripción Realtime a cambios en la tabla orders
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`user_orders_realtime_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+        },
+        () => {
+          fetchOrders(true);
+        }
+      )
+      .subscribe();
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    // Polling ligero cada 8s
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    }, 8000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      clearInterval(pollInterval);
+    };
+  }, [user, fetchOrders]);
 
   return { orders, loading, error, refetch: fetchOrders };
 }

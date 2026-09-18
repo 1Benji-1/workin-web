@@ -49,6 +49,7 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
             {/* Marketplace: Categorías y Detalle de Servicio */}
+            <Route path="/categories" element={<CategoryPage />} />
             <Route path="/categories/:slug" element={<CategoryPage />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
 

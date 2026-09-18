@@ -7,6 +7,7 @@ interface RequirementsChecklistProps {
   onToggle: (id: string, currentVal: boolean) => Promise<{ success: boolean; error?: string }>;
   onAdd: (description: string) => Promise<{ success: boolean; error?: string }>;
   canEdit?: boolean;
+  isFreelancer?: boolean;
 }
 
 export function RequirementsChecklist({
@@ -14,6 +15,7 @@ export function RequirementsChecklist({
   onToggle,
   onAdd,
   canEdit = true,
+  isFreelancer = false,
 }: RequirementsChecklistProps) {
   const [newDesc, setNewDesc] = useState("");
   const [adding, setAdding] = useState(false);
@@ -46,7 +48,9 @@ export function RequirementsChecklist({
             Checklist de Entregables y Requerimientos
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Especificaciones acordadas para dar por cumplido el servicio.
+            {isFreelancer
+              ? "Marca cada entregable conforme avances y completes el trabajo acordado."
+              : "Avance reportado por el profesional (modo lectura para seguimiento del cliente)."}
           </p>
         </div>
 
@@ -74,7 +78,9 @@ export function RequirementsChecklist({
           requirements.map((req) => (
             <label
               key={req.id}
-              className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                canEdit ? "cursor-pointer" : "cursor-default"
+              } ${
                 req.isCompleted
                   ? "bg-slate-50/80 border-slate-200 text-slate-400"
                   : "bg-white border-slate-200 hover:border-slate-300 text-slate-800"
@@ -84,8 +90,10 @@ export function RequirementsChecklist({
                 type="checkbox"
                 checked={req.isCompleted}
                 disabled={!canEdit || togglingId === req.id}
-                onChange={() => handleToggle(req.id, req.isCompleted)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                onChange={() => canEdit && handleToggle(req.id, req.isCompleted)}
+                className={`mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary ${
+                  canEdit ? "cursor-pointer" : "cursor-default opacity-75"
+                }`}
               />
               <span
                 className={`text-xs leading-relaxed flex-1 ${

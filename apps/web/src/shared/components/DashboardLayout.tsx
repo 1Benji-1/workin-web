@@ -239,7 +239,7 @@ export function DashboardLayout({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar en WorkIn..."
-                  className="w-48 2xl:w-72 rounded-full bg-[#1F363D] text-white text-xs pl-9 pr-4 py-2 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#70A9A1] transition-all"
+                  className="w-48 2xl:w-64 rounded-full border border-slate-200/90 bg-white/90 text-slate-700 text-xs pl-9 pr-4 py-2 shadow-2xs placeholder:text-slate-400 focus:outline-none focus:border-[#40798C] focus:ring-2 focus:ring-[#40798C]/20 transition-all"
                 />
               </div>
             </form>
@@ -247,24 +247,24 @@ export function DashboardLayout({
             {/* Chip de Usuario con avatar */}
             <Link
               to="/profile"
-              className="flex items-center gap-2 p-1 sm:p-1.5 pr-2.5 sm:pr-3 rounded-full bg-white border border-slate-200 shadow-2xs hover:border-[#40798C] transition-colors"
+              className="flex items-center gap-2.5 p-1 sm:p-1.5 pr-3 sm:pr-3.5 rounded-full bg-white border border-slate-200/80 shadow-2xs hover:border-[#40798C] hover:shadow-xs transition-all"
             >
               {profile?.avatarUrl ? (
                 <img
                   src={profile.avatarUrl}
                   alt={profile.fullName || "User"}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shadow-2xs"
                 />
               ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#40798C] text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#40798C] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
                   {(profile?.fullName || user?.email || "U")[0].toUpperCase()}
                 </div>
               )}
               <div className="hidden sm:block text-left">
-                <span className="text-xs font-semibold text-[#1F363D] block leading-tight max-w-[90px] lg:max-w-[120px] truncate">
+                <span className="text-xs font-bold text-[#1F363D] block leading-tight max-w-[90px] lg:max-w-[120px] truncate">
                   {profile?.fullName || "Mi Cuenta"}
                 </span>
-                <span className="text-[10px] text-[#40798C] block leading-tight capitalize">
+                <span className="text-[10px] text-[#40798C] font-semibold block leading-tight capitalize">
                   {primaryRole || "usuario"}
                 </span>
               </div>

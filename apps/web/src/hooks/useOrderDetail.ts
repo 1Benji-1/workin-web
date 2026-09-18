@@ -84,14 +84,16 @@ export function useOrderDetail(orderId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchOrderDetail = useCallback(async () => {
+  const fetchOrderDetail = useCallback(async (silent = false) => {
     if (!orderId) {
       setOrder(null);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [{ data, error: sErr }, { data: escrowData }] = await Promise.all([
@@ -185,6 +187,87 @@ export function useOrderDetail(orderId: string | undefined) {
   useEffect(() => {
     fetchOrderDetail();
   }, [fetchOrderDetail]);
+
+  // Suscripción Realtime a cambios en la orden, requerimientos, historial y custodia
+  useEffect(() => {
+    if (!orderId) return;
+
+    const channel = supabase
+      .channel(`order_realtime_${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${orderId}`,
+        },
+        () => {
+          fetchOrderDetail(true);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "order_requirements",
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => {
+          fetchOrderDetail(true);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "escrow_holds",
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => {
+          fetchOrderDetail(true);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "order_status_history",
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => {
+          fetchOrderDetail(true);
+        }
+      )
+      .subscribe();
+
+    // Actualizar automáticamente al volver a enfocar la ventana o pestaña
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchOrderDetail(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    // Polling ligero de respaldo (cada 5s) si la pestaña está activa
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchOrderDetail(true);
+      }
+    }, 5000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      clearInterval(pollInterval);
+    };
+  }, [orderId, fetchOrderDetail]);
 
   // Acción: Activar Pago (Solo Freelancer)
   const activatePayment = async (freelancerPrice: number) => {

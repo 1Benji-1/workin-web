@@ -90,25 +90,25 @@ export default function FreelancerDashboard() {
       actions={
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <Link to="/orders">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="!rounded-full text-xs font-semibold py-1.5 px-4">
               Ver Órdenes ({myOrders.length})
             </Button>
           </Link>
           <Link to="/services/new">
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" className="!rounded-full text-xs font-bold py-1.5 px-4 shadow-sm">
               + Publicar Servicio
             </Button>
           </Link>
         </div>
       }
     >
-      {/* Resumen Financiero y de Actividad - 4 Bloques de Color estilo diseno.png & paleta.png */}
+      {/* Resumen Financiero y de Actividad - 4 Bloques de Color estilo diseno.png */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
         {/* KPI 1: #40798C (Azul-Verdoso) */}
-        <div className="bg-[#40798C] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+        <div className="bg-[#40798C] text-white p-5 sm:p-6 rounded-[1.5rem] shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
           <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-semibold tracking-wider">
             <span className="truncate">FONDOS EN CUSTODIA</span>
-            <span className="text-base flex-shrink-0">🛡️</span>
+            <span className="text-lg flex-shrink-0">🛡️</span>
           </div>
           <div className="mt-3 sm:mt-4">
             <span className="text-2xl sm:text-3xl font-black tracking-tight block truncate">{formatCurrency(escrowHeld)}</span>
@@ -119,10 +119,10 @@ export default function FreelancerDashboard() {
         </div>
 
         {/* KPI 2: #70A9A1 (Verde Agua) */}
-        <div className="bg-[#70A9A1] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+        <div className="bg-[#70A9A1] text-white p-5 sm:p-6 rounded-[1.5rem] shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
           <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-semibold tracking-wider">
             <span className="truncate">GANANCIAS NETAS</span>
-            <span className="text-base flex-shrink-0">💵</span>
+            <span className="text-lg flex-shrink-0">💵</span>
           </div>
           <div className="mt-3 sm:mt-4">
             <span className="text-2xl sm:text-3xl font-black tracking-tight block truncate">{formatCurrency(releasedEarnings)}</span>
@@ -133,10 +133,10 @@ export default function FreelancerDashboard() {
         </div>
 
         {/* KPI 3: #9EC1A3 (Verde Pastel) */}
-        <div className="bg-[#9EC1A3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+        <div className="bg-[#9EC1A3] text-[#1F363D] p-5 sm:p-6 rounded-[1.5rem] shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
           <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-bold tracking-wider">
             <span className="truncate">SERVICIOS ACTIVOS</span>
-            <span className="text-base flex-shrink-0">💼</span>
+            <span className="text-lg flex-shrink-0">💼</span>
           </div>
           <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-black tracking-tight">{myServices.length}</span>
@@ -148,10 +148,10 @@ export default function FreelancerDashboard() {
         </div>
 
         {/* KPI 4: #CFE0C3 (Menta Claro) */}
-        <div className="bg-[#CFE0C3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+        <div className="bg-[#CFE0C3] text-[#1F363D] p-5 sm:p-6 rounded-[1.5rem] shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
           <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-bold tracking-wider">
             <span className="truncate">REPUTACIÓN</span>
-            <span className="text-base flex-shrink-0">⭐</span>
+            <span className="text-lg flex-shrink-0">⭐</span>
           </div>
           <div className="mt-3 sm:mt-4 flex items-center gap-2">
             <span className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -179,15 +179,15 @@ export default function FreelancerDashboard() {
             {myServices.map((srv) => (
               <div
                 key={srv.id}
-                className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0"
+                className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0 hover:bg-slate-50/50 transition-colors p-2 sm:p-3 rounded-2xl"
               >
-                <div className="flex items-start gap-3 min-w-0 flex-1">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-slate-100 flex items-center justify-center text-xl flex-shrink-0 border border-slate-200">
+                <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0 shadow-2xs">
                     {srv.category?.icon || "💼"}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="font-semibold text-sm text-slate-900 truncate">
+                      <h4 className="font-bold text-sm text-slate-900 truncate">
                         {srv.title}
                       </h4>
                       <Badge
@@ -197,10 +197,10 @@ export default function FreelancerDashboard() {
                         {srv.status === "active" ? "Activo" : "Pausado"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    <p className="text-xs text-slate-500 truncate">
                       {srv.category?.name} · Entrega en {srv.delivery_days} días · ⭐ {Number(srv.rating).toFixed(1)}
                     </p>
-                    <span className="text-xs font-bold text-primary inline-block mt-1">
+                    <span className="text-xs font-bold text-[#1F363D] inline-block">
                       Desde {formatCurrency(srv.price)}
                     </span>
                   </div>
@@ -208,12 +208,12 @@ export default function FreelancerDashboard() {
 
                 <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex-shrink-0">
                   <Link to={`/services/${srv.id}`}>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="!rounded-full text-xs font-medium">
                       Ver público
                     </Button>
                   </Link>
                   <Link to={`/services/${srv.id}/edit`}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="!rounded-full text-xs font-semibold">
                       Editar
                     </Button>
                   </Link>
@@ -222,7 +222,7 @@ export default function FreelancerDashboard() {
                     size="sm"
                     disabled={statusUpdatingId === srv.id}
                     onClick={() => handleToggleServiceStatus(srv.id, srv.status)}
-                    className="text-xs text-slate-500 cursor-pointer"
+                    className="!rounded-full text-xs text-slate-500 hover:text-slate-800 cursor-pointer"
                   >
                     {srv.status === "active" ? "Pausar" : "Reactivar"}
                   </Button>
@@ -231,18 +231,18 @@ export default function FreelancerDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-10 border border-dashed border-slate-200 rounded-xl space-y-3">
+          <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-3 bg-slate-50/50">
             <span className="text-3xl block">🚀</span>
             <div className="space-y-1">
-              <h4 className="font-semibold text-slate-800 text-sm">
+              <h4 className="font-bold text-slate-800 text-sm">
                 Aún no has publicado ningún servicio
               </h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
                 Crea tu primera oferta para que clientes potenciales puedan encontrarte y contratarte.
               </p>
             </div>
-            <Link to="/services/new">
-              <Button size="sm">
+            <Link to="/services/new" className="inline-block pt-1">
+              <Button size="sm" variant="dark" className="!rounded-full text-xs font-bold py-2 px-5 shadow-sm">
                 + Publicar mi primer servicio
               </Button>
             </Link>
@@ -268,7 +268,7 @@ export default function FreelancerDashboard() {
               return (
                 <div
                   key={ord.id}
-                  className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0"
+                  className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0 hover:bg-slate-50/50 transition-colors p-2 sm:p-3 rounded-2xl"
                 >
                   <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -290,7 +290,7 @@ export default function FreelancerDashboard() {
                       <span>{ord.deliveryDays} días estimados</span>
                     </p>
 
-                    <span className="text-xs font-bold text-primary block pt-0.5">
+                    <span className="text-xs font-bold text-[#1F363D] block pt-0.5">
                       {ord.price !== null ? formatCurrency(ord.price) : "Precio pendiente de acuerdo"}
                     </span>
                   </div>
@@ -300,7 +300,7 @@ export default function FreelancerDashboard() {
                       <Link to={`/orders/${ord.id}`}>
                         <Button
                           size="sm"
-                          className="bg-accent text-primary hover:bg-accent/90 text-xs font-bold whitespace-nowrap"
+                          className="bg-[#40798C] text-white hover:bg-[#2E5664] !rounded-full text-xs font-bold py-1.5 px-4 shadow-sm whitespace-nowrap"
                         >
                           💰 Fijar Precio
                         </Button>
@@ -308,7 +308,7 @@ export default function FreelancerDashboard() {
                     )}
 
                     <Link to={`/orders/${ord.id}`}>
-                      <Button variant="outline" size="sm" className="text-xs">
+                      <Button variant="outline" size="sm" className="!rounded-full text-xs font-semibold py-1.5 px-3.5">
                         Ver Acuerdo →
                       </Button>
                     </Link>
@@ -318,13 +318,13 @@ export default function FreelancerDashboard() {
             })}
           </div>
         ) : (
-          <div className="p-8 text-center rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
+          <div className="p-8 text-center rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-2">
             <span className="text-2xl block">📋</span>
-            <h4 className="font-semibold text-sm text-slate-800">
+            <h4 className="font-bold text-sm text-slate-800">
               No tienes órdenes activas en este momento
             </h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Cuando un cliente solicite uno de tus servicios en el marketplace, el pedido aparecerá aquí con los requerimientos detallados y podrás pulsar <strong>"Activar pago"</strong>.
+              Cuando un cliente solicite uno de tus servicios en el marketplace, el pedido aparecerá aquí con los requerimientos detallados y podrás pulsar <strong>"Fijar Precio"</strong>.
             </p>
           </div>
         )}

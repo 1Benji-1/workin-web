@@ -26,8 +26,10 @@ export function useReviews({
   const [loading, setLoading] = useState<boolean>(Boolean(autoFetch));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
+  const fetchReviews = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       if (orderId) {
@@ -56,6 +58,42 @@ export function useReviews({
     if (autoFetch && (freelancerId || serviceId || orderId)) {
       fetchReviews();
     }
+  }, [autoFetch, freelancerId, serviceId, orderId, fetchReviews]);
+
+  // Suscripción en tiempo real a reseñas
+  useEffect(() => {
+    if (!autoFetch || (!freelancerId && !serviceId && !orderId)) return;
+
+    const channelName = `reviews_realtime_${orderId || freelancerId || serviceId}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "reviews",
+        },
+        () => {
+          fetchReviews(true);
+        }
+      )
+      .subscribe();
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchReviews(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+    };
   }, [autoFetch, freelancerId, serviceId, orderId, fetchReviews]);
 
   // Cálculo memoizado de estadísticas de calificación

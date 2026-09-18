@@ -16,14 +16,16 @@ export function useDispute(orderId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchDispute = useCallback(async () => {
+  const fetchDispute = useCallback(async (silent = false) => {
     if (!orderId) {
       setDispute(null);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const { data, error: dErr } = await getDisputeByOrderId(supabase, orderId);
@@ -42,6 +44,60 @@ export function useDispute(orderId: string | undefined) {
   useEffect(() => {
     fetchDispute();
   }, [fetchDispute]);
+
+  // Suscripción Realtime a cambios en disputas y mensajes de disputa
+  useEffect(() => {
+    if (!orderId) return;
+
+    const channel = supabase
+      .channel(`dispute_realtime_${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "disputes",
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => {
+          fetchDispute(true);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "dispute_messages",
+        },
+        () => {
+          fetchDispute(true);
+        }
+      )
+      .subscribe();
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchDispute(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchDispute(true);
+      }
+    }, 5000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      clearInterval(pollInterval);
+    };
+  }, [orderId, fetchDispute]);
 
   // Abrir Disputa
   const createDispute = async (

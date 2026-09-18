@@ -14,12 +14,16 @@ export async function getServices(
   supabase: SupabaseClient<Database>,
   filters: ServiceFilterParams = {}
 ) {
+  const categoryJoin = filters.categorySlug
+    ? "category:categories!inner!services_category_id_fkey(id, name, slug, icon)"
+    : "category:categories!services_category_id_fkey(id, name, slug, icon)";
+
   let query = supabase
     .from("services")
     .select(`
       *,
       freelancer:profiles!services_freelancer_id_fkey(id, full_name, avatar_url, headline, skills),
-      category:categories!services_category_id_fkey(id, name, slug, icon)
+      ${categoryJoin}
     `);
 
   // Solo servicios activos salvo que se filtre por freelancer específico

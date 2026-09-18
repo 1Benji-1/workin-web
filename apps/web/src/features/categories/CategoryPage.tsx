@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCategories } from "../../hooks/useCategories";
 import { useServices } from "../../hooks/useServices";
 import { ServiceCard } from "../services/ServiceCard";
@@ -9,14 +9,23 @@ import { useAuth } from "../../shared/context/AuthContext";
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { categories } = useCategories();
   const { roles } = useAuth();
 
-  const currentCategory = categories.find((c) => c.slug === slug);
+  const currentCategory = slug ? categories.find((c) => c.slug === slug) : undefined;
 
   const [filters, setFilters] = useState<FilterValues>({
     categorySlug: slug,
   });
+
+  // Sincronizar filtros cuando cambia el slug en la URL
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      categorySlug: slug,
+    }));
+  }, [slug]);
 
   const { services, loading, error } = useServices({
     ...filters,
@@ -24,7 +33,15 @@ export default function CategoryPage() {
   });
 
   const handleFilterChange = (updates: Partial<FilterValues>) => {
-    setFilters((prev) => ({ ...prev, ...updates }));
+    if (updates.categorySlug !== undefined && updates.categorySlug !== slug) {
+      if (updates.categorySlug) {
+        navigate(`/categories/${updates.categorySlug}`);
+      } else {
+        navigate(`/categories`);
+      }
+    } else {
+      setFilters((prev) => ({ ...prev, ...updates }));
+    }
   };
 
   const handleClearFilters = () => {
@@ -41,15 +58,17 @@ export default function CategoryPage() {
               Marketplace
             </Link>
             <span className="text-xs text-slate-400">/</span>
-            <span className="text-xs text-accent font-semibold">Categoría</span>
+            <span className="text-xs text-accent font-semibold">
+              {currentCategory?.name || "Categorías"}
+            </span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center gap-3">
             <span>{currentCategory?.icon || "💼"}</span>
-            <span>{currentCategory?.name || "Categoría de Servicios"}</span>
+            <span>{currentCategory?.name || "Todas las Categorías"}</span>
           </h1>
           <p className="text-sm text-slate-300 leading-relaxed pt-1">
             {currentCategory?.description ||
-              "Encuentra profesionales calificados para tus proyectos con pago seguro en escrow."}
+              "Explora todos los servicios profesionales calificados disponibles con garantía de pago en custodia."}
           </p>
         </div>
       </div>

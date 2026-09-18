@@ -358,7 +358,8 @@ export default function OrderDetailPage() {
             requirements={order.requirements}
             onToggle={toggleRequirement}
             onAdd={addRequirement}
-            canEdit={order.status !== "cerrado" && order.status !== "aprobado"}
+            canEdit={isFreelancer && order.status !== "cerrado" && order.status !== "aprobado"}
+            isFreelancer={isFreelancer}
           />
 
           {/* Reseña del Pedido (Fase 6) */}

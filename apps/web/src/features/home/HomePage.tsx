@@ -1,49 +1,156 @@
-import React, { useState, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Button, Badge } from "@freelance/ui";
-import { calculatePlatformFee, formatCurrency } from "@freelance/core";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Button } from "@freelance/ui";
 import { useAuth } from "../../shared/context/AuthContext";
 import { useCategories } from "../../hooks/useCategories";
 import { useServices } from "../../hooks/useServices";
-import { SearchBar } from "../search/SearchBar";
 import { ServiceCard } from "../services/ServiceCard";
+
+/* ═══════════════════════════════════════════════
+   Slides del carrusel hero (auto-scroll)
+   Contenido freelancer con soporte para imágenes
+   ═══════════════════════════════════════════════ */
+const heroSlides = [
+  {
+    title: "Talento Freelancer,\nSoluciones Reales",
+    subtitle:
+      "Conecta con profesionales verificados listos para impulsar tus proyectos con garantía de pago seguro.",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80",
+    gradient: "bg-gradient-to-br from-[#1F363D] via-[#2A5A6B] to-[#40798C]",
+    accentGlow: "bg-[#70A9A1]/25",
+    card: {
+      icon: "🎨",
+      image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=400&q=80",
+      title: "Diseño & Creatividad",
+      desc: "Logos, branding, interfaces UI/UX y diseño gráfico profesional.",
+      highlight: "Más buscado",
+    },
+  },
+  {
+    title: "Desarrollo Web\n& Aplicaciones",
+    subtitle:
+      "Sitios web, apps móviles y soluciones digitales a medida con tecnologías de vanguardia.",
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
+    gradient: "bg-gradient-to-br from-[#2A4852] via-[#40798C] to-[#70A9A1]",
+    accentGlow: "bg-[#9EC1A3]/25",
+    card: {
+      icon: "💻",
+      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80",
+      title: "Desarrollo & Tech",
+      desc: "React, Flutter, WordPress y frameworks modernos a tu servicio.",
+      highlight: "Alta demanda",
+    },
+  },
+  {
+    title: "Marketing Digital\n& Estrategia",
+    subtitle:
+      "Potencia tu marca con expertos en redes sociales, SEO y campañas publicitarias.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80",
+    gradient: "bg-gradient-to-br from-[#1F363D] via-[#3D6B5E] to-[#9EC1A3]",
+    accentGlow: "bg-[#CFE0C3]/25",
+    card: {
+      icon: "📈",
+      image: "https://images.unsplash.com/photo-1533750516457-a7f992034fec?auto=format&fit=crop&w=400&q=80",
+      title: "Marketing Digital",
+      desc: "SEO, social media, email marketing y estrategia de contenido.",
+      highlight: "Tendencia",
+    },
+  },
+  {
+    title: "Consultoría &\nAsesoría Profesional",
+    subtitle:
+      "Asesoría en finanzas, coaching empresarial, legal y planificación estratégica.",
+    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1600&q=80",
+    gradient: "bg-gradient-to-br from-[#142429] via-[#1F363D] to-[#40798C]",
+    accentGlow: "bg-[#40798C]/25",
+    card: {
+      icon: "💼",
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&q=80",
+      title: "Consultoría",
+      desc: "Planes de negocio, finanzas, mentoría y servicios profesionales.",
+      highlight: "Premium",
+    },
+  },
+  {
+    title: "Contenido,\nRedacción & Más",
+    subtitle:
+      "Copywriting profesional, traducción certificada, edición y creación de contenido.",
+    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1600&q=80",
+    gradient: "bg-gradient-to-br from-[#2A4852] via-[#557B73] to-[#70A9A1]",
+    accentGlow: "bg-[#9EC1A3]/25",
+    card: {
+      icon: "✍️",
+      image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=400&q=80",
+      title: "Redacción & Contenido",
+      desc: "Copywriting, blogs, traducción y redacción creativa profesional.",
+      highlight: "Popular",
+    },
+  },
+];
 
 export default function HomePage() {
   const { user, roles } = useAuth();
   const { categories, loading: categoriesLoading } = useCategories();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
   const resultsRef = useRef<HTMLElement>(null);
 
-  const { services, loading: servicesLoading, error: servicesError } = useServices({
+  const {
+    services,
+    loading: servicesLoading,
+    error: servicesError,
+  } = useServices({
     searchQuery: searchQuery || undefined,
   });
 
-  const isUnauthorizedRedirect = (location.state as { unauthorizedRole?: boolean })?.unauthorizedRole;
+  const isUnauthorizedRedirect = (
+    location.state as { unauthorizedRole?: boolean }
+  )?.unauthorizedRole;
   const isFreelancer = roles.includes("freelancer");
-  const sampleFee = calculatePlatformFee(100);
 
-  const handleSearch = (query: string, shouldScroll = true) => {
-    setSearchQuery(query);
-    if (shouldScroll) {
+  // Leer query de búsqueda desde URL (viene del Navbar)
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) {
+      setSearchQuery(q);
       setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 50);
+        resultsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 300);
     }
+  }, [searchParams]);
+
+  // Auto-avance del carrusel cada 5 segundos
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 pb-16">
+    <main className="min-h-screen bg-[#F4F7F6] text-slate-900 pb-16">
       {/* Alerta si fue rebotado por RoleGuard */}
       {isUnauthorizedRedirect && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm flex items-start gap-3">
             <span className="text-xl">⚠️</span>
             <div className="space-y-1">
-              <strong className="block font-semibold">Acceso Exclusivo para Freelancers</strong>
+              <strong className="block font-semibold">
+                Acceso Exclusivo para Freelancers
+              </strong>
               <p>
-                Para entrar al panel de freelancer debes tener activo el rol <strong>Freelancer</strong> en tu perfil.
+                Para entrar al panel de freelancer debes tener activo el rol{" "}
+                <strong>Freelancer</strong> en tu perfil.
               </p>
               <div className="pt-2">
                 <Link to="/profile">
@@ -57,143 +164,128 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Hero Section */}
-      <section
-        className={`relative overflow-hidden bg-gradient-to-b from-[#1F363D] via-[#2A4852] to-[#1F363D] text-white flex flex-col justify-center transition-all ${
-          user
-            ? "min-h-[calc(100vh-4rem)] py-20 sm:py-28"
-            : "min-h-[calc(100vh-4rem)] py-16 sm:py-24"
-        }`}
-      >
-        {/* Glow de fondo decorativo estilo NexaVerse */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[900px] h-[300px] sm:h-[450px] bg-[#40798C]/20 blur-[120px] rounded-full pointer-events-none" />
+      {/* ═══════════════════════════════════════════════
+          HERO CARRUSEL — Diseño inspirado en diseno.png
+          ═══════════════════════════════════════════════ */}
+      <section className="px-3 sm:px-5 lg:px-8 pt-3 sm:pt-4">
+        <div
+          className="relative max-w-7xl mx-auto rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-sm"
+          style={{ minHeight: "calc(100vh - 7rem)" }}
+        >
+          {/* ── Slides ── */}
+          {heroSlides.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
+              aria-hidden={index !== currentSlide}
+            >
+              {/* Background Image or Gradient fallback */}
+              {slide.image ? (
+                <img
+                  src={slide.image}
+                  alt={slide.title.replace("\n", " ")}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+              ) : (
+                <div className={`absolute inset-0 ${slide.gradient}`} />
+              )}
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center my-auto">
-          <div className="text-center w-full max-w-5xl mx-auto space-y-6 flex flex-col items-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight sm:leading-[1.1] text-center max-w-4xl">
-              Encuentra talento experto o{" "}
-              <span className="text-[#9EC1A3] underline decoration-[#70A9A1] decoration-4 underline-offset-8">
-                consigue proyectos
-              </span>
-            </h1>
-
-            <p className="text-base sm:text-xl text-slate-200/90 max-w-3xl mx-auto font-normal text-center leading-relaxed">
-              La plataforma freelance donde tus fondos se retienen de forma segura en custodia hasta que apruebes la entrega final.
-            </p>
-
-            {/* Buscador Principal Centrado y Amplio */}
-            <div className="pt-2 w-full max-w-3xl sm:max-w-4xl mx-auto">
-              <SearchBar
-                initialValue={searchQuery}
-                onSearch={handleSearch}
-                placeholder="¿Qué servicio buscas hoy? (ej. Diseño de logo, App en Flutter, React...)"
+              {/* Decorative glow blob */}
+              <div
+                className={`absolute top-1/4 right-1/4 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] ${slide.accentGlow} blur-[100px] sm:blur-[140px] rounded-full pointer-events-none opacity-50`}
               />
-            </div>
 
-            {/* Búsquedas Populares */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs sm:text-sm text-slate-200/90">
-              <span className="text-[#CFE0C3] font-semibold">Tendencias:</span>
-              {["Diseño UI/UX", "Desarrollo Web", "Logotipos", "Apps Móviles", "WordPress", "Traducción"].map((term) => (
-                <button
-                  key={term}
-                  type="button"
-                  onClick={() => handleSearch(term, true)}
-                  className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-slate-100 hover:text-white transition-all text-xs cursor-pointer hover:border-[#9EC1A3]/50 shadow-2xs backdrop-blur-xs"
-                >
-                  {term}
-                </button>
-              ))}
+              {/* Overlay oscuro para garantizar legibilidad perfecta del texto blanco */}
+              <div className="absolute inset-0 bg-black/35 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+
+              {/* ── Content — positioned bottom-left like diseno.png ── */}
+              <div className="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10 lg:p-14 xl:p-16 pb-14 sm:pb-16">
+                <div className="max-w-2xl space-y-4 sm:space-y-5">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-[1.08] whitespace-pre-line tracking-tight font-futura drop-shadow-md">
+                    {slide.title}
+                  </h1>
+                  <p className="text-sm sm:text-base lg:text-lg text-white/90 max-w-xl leading-relaxed drop-shadow-sm">
+                    {slide.subtitle}
+                  </p>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("categorias")}
+                      className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full border-2 border-white bg-white/10 backdrop-blur-sm text-white text-sm font-bold hover:bg-white hover:text-[#1F363D] transition-all duration-200 cursor-pointer active:scale-[0.97] shadow-lg"
+                    >
+                      Explorar Categorías
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Floating card — right side, desktop only (Fiel a diseno.png: horizontal, sin bordes) ── */}
+              <div className="hidden lg:block absolute right-8 xl:right-14 bottom-14 xl:bottom-16 z-20">
+                <div className="bg-white rounded-3xl p-3.5 shadow-2xl flex items-center gap-3.5 max-w-xs xl:max-w-sm transform hover:scale-[1.02] transition-transform duration-300">
+                  {slide.card.image ? (
+                    <img
+                      src={slide.card.image}
+                      alt={slide.card.title}
+                      className="w-20 h-20 xl:w-24 xl:h-24 rounded-2xl object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 xl:w-24 xl:h-24 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl shrink-0">
+                      {slide.card.icon}
+                    </div>
+                  )}
+                  <div className="space-y-1 min-w-0 pr-2">
+                    <h3 className="font-bold text-sm text-slate-900 truncate">
+                      {slide.card.title}
+                    </h3>
+                    <p className="text-[11px] xl:text-xs text-slate-500 leading-snug line-clamp-2">
+                      {slide.card.desc}
+                    </p>
+                    <span className="inline-block text-xs font-bold text-[#40798C] pt-0.5">
+                      {slide.card.highlight}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
+          ))}
+
+          {/* ── Dots navigation ── */}
+          <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+            {heroSlides.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setCurrentSlide(index)}
+                className={`rounded-full transition-all duration-300 cursor-pointer ${
+                  index === currentSlide
+                    ? "w-3 h-3 bg-white shadow-sm"
+                    : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
+                }`}
+                aria-label={`Slide ${index + 1}`}
+              />
+            ))}
           </div>
-
-          {/* Dual Entry Points - Solo visible para visitantes no autenticados */}
-          {!user && (
-            <div className="grid md:grid-cols-2 gap-4 sm:gap-5 mt-8 sm:mt-10 max-w-3xl mx-auto w-full">
-              {/* Card Contratar */}
-              <div className="relative group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.12] backdrop-blur-md p-4 sm:p-5 shadow-lg hover:border-[#70A9A1]/60 transition-all duration-300 text-left flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-8 h-8 rounded-lg bg-[#40798C]/30 border border-[#40798C]/50 flex items-center justify-center text-base">
-                        💼
-                      </span>
-                      <span className="text-[11px] font-bold text-[#CFE0C3] uppercase tracking-wider">
-                        Para Clientes
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-300/70 group-hover:text-white transition-colors">
-                      Contratar
-                    </span>
-                  </div>
-
-                  <h2 className="text-base font-bold text-white mb-1 group-hover:text-[#CFE0C3] transition-colors">
-                    Quiero contratar talento
-                  </h2>
-                  <p className="text-xs text-slate-200/80 leading-relaxed line-clamp-2">
-                    Servicios a precio fijo con garantía Escrow. El dinero solo se libera tras tu visto bueno.
-                  </p>
-                </div>
-
-                <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
-                  <a
-                    href="#servicios"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9EC1A3] hover:text-[#CFE0C3] transition-colors"
-                  >
-                    <span>Explorar servicios</span>
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Card Trabajar */}
-              <div className="relative group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.12] backdrop-blur-md p-4 sm:p-5 shadow-lg hover:border-[#9EC1A3]/60 transition-all duration-300 text-left flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-8 h-8 rounded-lg bg-[#9EC1A3]/20 border border-[#9EC1A3]/40 flex items-center justify-center text-base">
-                        🚀
-                      </span>
-                      <span className="text-[11px] font-bold text-[#CFE0C3] uppercase tracking-wider">
-                        Para Freelancers
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-300/70 group-hover:text-white transition-colors">
-                      Trabajar
-                    </span>
-                  </div>
-
-                  <h2 className="text-base font-bold text-white mb-1 group-hover:text-[#9EC1A3] transition-colors">
-                    Quiero trabajar como freelancer
-                  </h2>
-                  <p className="text-xs text-slate-200/80 leading-relaxed line-clamp-2">
-                    Publica tus paquetes, establece tus tarifas y asegura tus ingresos antes de iniciar cada entrega.
-                  </p>
-                </div>
-
-                <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
-                  <Link
-                    to="/register/freelancer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9EC1A3] hover:text-[#CFE0C3] transition-colors"
-                  >
-                    <span>Registrarme gratis</span>
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Categorías Rápidas */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      {/* ═══════════════════════════
+          Categorías Rápidas
+          ═══════════════════════════ */}
+      <section
+        id="categorias"
+        className="scroll-mt-20 max-w-7xl mx-auto px-4 sm:px-6 py-12"
+      >
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
               Explora por Categoría
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Servicios organizados por especialidad con profesionales verificados
+              Servicios organizados por especialidad con profesionales
+              verificados
             </p>
           </div>
         </div>
@@ -208,12 +300,12 @@ export default function HomePage() {
               <Link
                 key={cat.id}
                 to={`/categories/${cat.slug}`}
-                className="group flex flex-col items-center p-4 rounded-xl border border-slate-200 bg-white hover:border-primary/40 hover:shadow-md transition-all text-center"
+                className="group flex flex-col items-center p-4 rounded-xl border border-slate-200 bg-white hover:border-[#40798C]/40 hover:shadow-md transition-all text-center"
               >
                 <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">
                   {cat.icon || "💼"}
                 </span>
-                <h3 className="font-semibold text-xs sm:text-sm text-slate-800 group-hover:text-primary transition-colors">
+                <h3 className="font-semibold text-xs sm:text-sm text-slate-800 group-hover:text-[#40798C] transition-colors">
                   {cat.name}
                 </h3>
               </Link>
@@ -222,18 +314,26 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Servicios Destacados / Recientes */}
-      <section ref={resultsRef} id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 scroll-mt-20">
+      {/* ═══════════════════════════════════════
+          Servicios Destacados / Resultados
+          ═══════════════════════════════════════ */}
+      <section
+        ref={resultsRef}
+        id="servicios"
+        className="scroll-mt-20 max-w-7xl mx-auto px-4 sm:px-6 py-8"
+      >
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                {searchQuery ? `Resultados para "${searchQuery}"` : "Servicios Destacados"}
+                {searchQuery
+                  ? `Resultados para "${searchQuery}"`
+                  : "Servicios Destacados"}
               </h2>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="text-xs text-slate-400 hover:text-slate-700 underline"
+                  className="text-xs text-slate-400 hover:text-slate-700 underline cursor-pointer"
                 >
                   Limpiar
                 </button>
@@ -246,16 +346,14 @@ export default function HomePage() {
 
           {isFreelancer && (
             <Link to="/services/new" className="hidden sm:inline-block">
-              <Button size="sm">
-                + Publicar servicio
-              </Button>
+              <Button size="sm">+ Publicar servicio</Button>
             </Link>
           )}
         </div>
 
         {servicesLoading ? (
           <div className="flex min-h-[30vh] items-center justify-center text-sm text-slate-500">
-            <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
+            <span className="w-5 h-5 border-2 border-[#40798C] border-t-transparent rounded-full animate-spin mr-2" />
             Cargando servicios del marketplace...
           </div>
         ) : servicesError ? (
@@ -273,7 +371,9 @@ export default function HomePage() {
             <span className="text-5xl block">📦</span>
             <div className="space-y-1">
               <h3 className="font-bold text-slate-800 text-base">
-                {searchQuery ? "No hay resultados para esta búsqueda" : "Aún no hay servicios publicados"}
+                {searchQuery
+                  ? "No hay resultados para esta búsqueda"
+                  : "Aún no hay servicios publicados"}
               </h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
                 {searchQuery
@@ -298,9 +398,7 @@ export default function HomePage() {
                   </Link>
                 ) : (
                   <Link to="/register/freelancer">
-                    <Button size="sm">
-                      Registrarme como Freelancer
-                    </Button>
+                    <Button size="sm">Registrarme como Freelancer</Button>
                   </Link>
                 )}
               </div>
@@ -309,62 +407,187 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Sección Informativa: Cómo Funciona el Escrow */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        <div className="rounded-2xl bg-white border border-slate-200 p-8 sm:p-12 shadow-sm">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              ¿Cómo funciona el Sistema Escrow?
-            </h2>
-            <p className="text-sm text-slate-600 mt-2">
-              Seguridad total para clientes y freelancers en 3 sencillos pasos
-            </p>
-          </div>
+      {/* ════════════════════════════════════════
+          PIE DE PÁGINA (FOOTER AESTHETIC) — Nosotros
+          ════════════════════════════════════════ */}
+      <footer id="nosotros" className="scroll-mt-20 px-3 sm:px-5 lg:px-8 pt-10 pb-6">
+        <div className="relative max-w-7xl mx-auto rounded-[2rem] sm:rounded-[2.5rem] bg-[#1F363D] text-white overflow-hidden shadow-xl">
+          {/* Glow ambiental decorativo */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#40798C]/20 blur-[130px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#70A9A1]/15 blur-[120px] rounded-full pointer-events-none" />
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-3 p-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-black">
-                1
+          <div className="relative z-10 p-8 sm:p-12 lg:p-16 space-y-12">
+            {/* Fila Superior: Marca + Caja de Acción Rápida */}
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 pb-10 border-b border-white/10">
+              <div className="space-y-3.5 max-w-lg">
+                <Link
+                  to="/"
+                  className="font-futura font-extrabold text-3xl sm:text-4xl text-white tracking-tight hover:opacity-90 transition-opacity inline-block"
+                >
+                  WorkIn
+                </Link>
+                <p className="text-sm text-slate-300/85 leading-relaxed">
+                  Conectamos clientes con el mejor talento independiente de forma transparente, protegiendo cada pago mediante nuestro sistema de garantía en custodia.
+                </p>
+
+                {/* Badges de Garantía y Confianza */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-[#CFE0C3] border border-white/10">
+                    🔒 Fondos en Custodia Escrow
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/10">
+                    ⚡ Entregas Garantizadas
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/10">
+                    🛡️ Soporte & Mediación Activa
+                  </span>
+                </div>
               </div>
-              <h3 className="font-bold text-slate-800 text-base">Acuerdo y Requerimientos</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                El cliente elige el paquete de servicio o acuerdan requerimientos y plazos claros sin sorpresas.
-              </p>
+
+              {/* Caja de Acción Rápida / Banner de Invitación */}
+              <div className="w-full lg:w-auto p-5 sm:p-6 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-sm space-y-3 shrink-0">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>✨</span> ¿Listo para dar el siguiente paso?
+                </h4>
+                <p className="text-xs text-slate-300 max-w-sm leading-relaxed">
+                  Contrata a un profesional calificado para tu negocio o empieza a generar ingresos con tus habilidades.
+                </p>
+                <div className="flex items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("categorias")}
+                    className="px-4 py-2 rounded-full bg-white text-[#1F363D] text-xs font-bold hover:bg-[#CFE0C3] transition-colors cursor-pointer"
+                  >
+                    Explorar Servicios
+                  </button>
+                  <Link
+                    to="/register/freelancer"
+                    className="px-4 py-2 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    Ser Freelancer
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            <div className="text-center space-y-3 p-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-accent/15 text-accent flex items-center justify-center text-2xl font-black">
-                2
+            {/* Columnas de Navegación */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
+              {/* Columna 1: Especialidades */}
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-[#CFE0C3]">
+                  Categorías
+                </h5>
+                <ul className="space-y-2 text-xs text-slate-300">
+                  {categories.slice(0, 5).map((cat) => (
+                    <li key={cat.id}>
+                      <Link
+                        to={`/categories/${cat.slug}`}
+                        className="hover:text-white transition-colors flex items-center gap-1.5"
+                      >
+                        <span>{cat.icon || "•"}</span>
+                        <span>{cat.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                  {categories.length === 0 && (
+                    <>
+                      <li><a href="#categorias" className="hover:text-white transition-colors">Diseño & Creatividad</a></li>
+                      <li><a href="#categorias" className="hover:text-white transition-colors">Desarrollo Web</a></li>
+                      <li><a href="#categorias" className="hover:text-white transition-colors">Marketing Digital</a></li>
+                      <li><a href="#categorias" className="hover:text-white transition-colors">Consultoría</a></li>
+                    </>
+                  )}
+                </ul>
               </div>
-              <h3 className="font-bold text-slate-800 text-base">Pago Seguro en Custodia</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                El cliente deposita los fondos, los cuales quedan retenidos por la plataforma. El freelancer trabaja sabiendo que el pago está garantizado.
-              </p>
+
+              {/* Columna 2: Freelancers */}
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-[#CFE0C3]">
+                  Freelancers
+                </h5>
+                <ul className="space-y-2 text-xs text-slate-300">
+                  <li>
+                    <Link to="/register/freelancer" className="hover:text-white transition-colors">
+                      Crear perfil profesional
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={user ? "/services/new" : "/login"} className="hover:text-white transition-colors">
+                      Publicar nuevo servicio
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={user ? "/freelancer/dashboard" : "/login"} className="hover:text-white transition-colors">
+                      Panel de Freelancer
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="#nosotros" className="hover:text-white transition-colors">
+                      Cobros garantizados
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Columna 3: Clientes */}
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-[#CFE0C3]">
+                  Clientes
+                </h5>
+                <ul className="space-y-2 text-xs text-slate-300">
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("servicios")}
+                      className="hover:text-white transition-colors text-left cursor-pointer"
+                    >
+                      Buscar talento verificado
+                    </button>
+                  </li>
+                  <li>
+                    <Link to={user ? "/client/dashboard" : "/register"} className="hover:text-white transition-colors">
+                      Panel de Contrataciones
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={user ? "/messages" : "/login"} className="hover:text-white transition-colors">
+                      Chat & Mensajería en vivo
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={user ? "/orders" : "/login"} className="hover:text-white transition-colors">
+                      Mis Pedidos
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Columna 4: Sobre Nosotros */}
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-[#CFE0C3]">
+                  Nosotros
+                </h5>
+                <p className="text-xs text-slate-300/80 leading-relaxed">
+                  WorkIn es una plataforma creada para empoderar la economía freelance con acuerdos justos, requerimientos medibles y mediación profesional en cada entrega.
+                </p>
+                <div className="pt-2 flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-medium text-emerald-300">
+                    Sistema Operativo 24/7
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="text-center space-y-3 p-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-black">
-                3
+            {/* Barra Inferior de Copyright y Enlaces Legales */}
+            <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+              <p>© {new Date().getFullYear()} WorkIn. Todos los derechos reservados.</p>
+              <div className="flex items-center gap-6 text-[11px]">
+                <span className="hover:text-white transition-colors cursor-default">Términos de Uso</span>
+                <span className="hover:text-white transition-colors cursor-default">Privacidad</span>
+                <span className="hover:text-white transition-colors cursor-default">Seguridad y Pagos</span>
               </div>
-              <h3 className="font-bold text-slate-800 text-base">Entrega y Liberación</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                El freelancer entrega el trabajo. El cliente revisa y aprueba para liberar los fondos, con mediación de soporte si surge alguna disputa.
-              </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Diagnóstico técnico Monorepo & Core (Pie de página) */}
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-        <div className="p-4 rounded-xl border border-slate-200 bg-white/60 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>WorkIn Monorepo · Fase 0, 1 y 2 Integradas</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Comisión @freelance/core calculada: <strong className="font-mono text-slate-800">{formatCurrency(sampleFee)}</strong></span>
-            <span>Stack: React + Tailwind + Supabase RLS</span>
           </div>
         </div>
       </footer>

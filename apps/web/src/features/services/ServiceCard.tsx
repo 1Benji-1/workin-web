@@ -43,7 +43,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
               <img
                 src={service.freelancer.avatarUrl}
                 alt={service.freelancer.fullName || "Freelancer"}
-                className="w-8 h-8 rounded-full object-cover border border-slate-200"
+                className="w-8 h-8 rounded-full object-cover shadow-2xs"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
