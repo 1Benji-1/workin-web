@@ -4,6 +4,7 @@ import { useOrders } from "../../hooks/useOrders";
 import { getOrderStatusMeta, formatCurrency } from "@freelance/core";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Button, Badge } from "@freelance/ui";
+import { DashboardLayout } from "../../shared/components/DashboardLayout";
 
 export default function OrdersListPage() {
   const { user } = useAuth();
@@ -14,37 +15,26 @@ export default function OrdersListPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <Badge variant="primary" size="sm" className="mb-1">
-            Fase 3: Contratación y Acuerdos
-          </Badge>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            Mis Pedidos y Contrataciones
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Historial de acuerdos y servicios en curso dentro de la plataforma.
-          </p>
-        </div>
-
+    <DashboardLayout
+      title="Pedidos & Contratos"
+      subtitle="Historial de órdenes, acuerdos y servicios en curso dentro de la plataforma."
+      actions={
         <Link to="/">
           <Button variant="outline" size="sm">
             Explorar Marketplace
           </Button>
         </Link>
-      </div>
-
-      {/* Selector de Pestañas */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      }
+    >
+      {/* Selector de Pestañas estilo Píldora / Cápsula (Support Tickets en diseno.png) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-white rounded-2xl sm:rounded-full border border-slate-200/80 shadow-2xs overflow-x-auto max-w-full scrollbar-none">
         <button
           type="button"
           onClick={() => setFilterRole("all")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+          className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             filterRole === "all"
-              ? "border-primary text-primary"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "bg-[#1F363D] text-white shadow-xs"
+              : "text-slate-600 hover:text-[#1F363D]"
           }`}
         >
           Todos los pedidos
@@ -52,24 +42,24 @@ export default function OrdersListPage() {
         <button
           type="button"
           onClick={() => setFilterRole("as_client")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+          className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             filterRole === "as_client"
-              ? "border-primary text-primary"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "bg-[#40798C] text-white shadow-xs"
+              : "text-slate-600 hover:text-[#1F363D]"
           }`}
         >
-          Mis Contrataciones (Como Cliente)
+          Mis Contrataciones
         </button>
         <button
           type="button"
           onClick={() => setFilterRole("as_freelancer")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+          className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             filterRole === "as_freelancer"
-              ? "border-primary text-primary"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "bg-[#70A9A1] text-white shadow-xs"
+              : "text-slate-600 hover:text-[#1F363D]"
           }`}
         >
-          Mis Trabajos (Como Freelancer)
+          Mis Trabajos
         </button>
       </div>
 
@@ -87,7 +77,7 @@ export default function OrdersListPage() {
           </button>
         </div>
       ) : orders.length > 0 ? (
-        <div className="grid gap-4">
+        <div className="grid gap-3.5 sm:gap-4">
           {orders.map((order) => {
             const meta = getOrderStatusMeta(order.status);
             const isClient = user?.id === order.clientId;
@@ -95,10 +85,10 @@ export default function OrdersListPage() {
             return (
               <div
                 key={order.id}
-                className="p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 min-w-0"
               >
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={meta.badgeVariant} size="sm">
                       {meta.label}
                     </Badge>
@@ -110,23 +100,23 @@ export default function OrdersListPage() {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-base text-slate-900 leading-snug">
+                  <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-snug break-words">
                     {order.title}
                   </h3>
 
-                  <p className="text-xs text-slate-500 flex items-center gap-2">
+                  <p className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span>
                       {isClient ? "Freelancer:" : "Cliente:"}{" "}
                       <strong className="text-slate-700">
                         {isClient ? order.freelancer.fullName : order.client.fullName}
                       </strong>
                     </span>
-                    <span>·</span>
+                    <span className="hidden sm:inline">·</span>
                     <span>Entrega estimada: {order.deliveryDays} días</span>
                   </p>
                 </div>
 
-                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 flex-shrink-0 w-full sm:w-auto">
                   <span className="text-base sm:text-lg font-black text-primary">
                     {order.price !== null ? formatCurrency(order.price) : "Por acordar"}
                   </span>
@@ -159,6 +149,6 @@ export default function OrdersListPage() {
           </Link>
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

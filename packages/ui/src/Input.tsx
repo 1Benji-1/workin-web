@@ -20,10 +20,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`w-full rounded-md border px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`w-full rounded-xl border px-3.5 py-2.5 text-sm text-[#1F363D] transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
-              ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-              : "border-slate-300 focus:border-primary focus:ring-primary/20"
+              ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
+              : "border-slate-200 focus:border-[#40798C] focus:ring-[#40798C]/20"
           } ${className}`}
           {...props}
         />

@@ -36,7 +36,7 @@ export async function openOrderDispute(
     p_order_id: payload.orderId,
     p_reason: payload.reason,
     p_description: payload.description,
-    p_initial_message: payload.initialMessage || null,
+    p_initial_message: payload.initialMessage || undefined,
   });
 
   return {

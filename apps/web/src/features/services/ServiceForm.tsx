@@ -5,6 +5,7 @@ import { useCategories } from "../../hooks/useCategories";
 import { createService, getServiceById, updateService } from "@freelance/api";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { Card, Input, Button } from "@freelance/ui";
+import { ImageUpload } from "../../shared/components/ImageUpload";
 
 export default function ServiceForm() {
   const { id } = useParams<{ id: string }>();
@@ -205,13 +206,13 @@ export default function ServiceForm() {
             />
 
             <div className="sm:col-span-2">
-              <Input
-                label="URL de Imagen de Portada (Opcional)"
-                type="url"
-                placeholder="https://images.unsplash.com/... o enlace de imagen"
+              <ImageUpload
+                label="Foto de Portada del Servicio (Opcional)"
+                mode="cover"
+                folder="services"
                 value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                helperText="Si lo dejas vacío, se usará el icono representativo de la categoría."
+                onChange={(url) => setCoverImage(url)}
+                helperText="Si no seleccionas una imagen, se usará el icono representativo de la categoría."
               />
             </div>
 

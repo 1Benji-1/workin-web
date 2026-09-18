@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Card, Button, Badge } from "@freelance/ui";
+import { DashboardLayout } from "../../shared/components/DashboardLayout";
 import { ProfileForm, type ProfileFormData } from "./ProfileForm";
 import { useReviews } from "../../hooks/useReviews";
 import { RatingSummaryCard, ReviewsList } from "../reviews";
@@ -111,118 +112,101 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary">Mi Perfil</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Gestiona tu información personal, roles y portafolio profesional.
-          </p>
-        </div>
+    <DashboardLayout
+      title="Mi Perfil & Ajustes"
+      subtitle="Configura tus datos personales, de contacto y tu perfil profesional para el marketplace."
+    >
+      <div className="space-y-6">
+        {feedback && (
+          <div
+            className={`p-4 rounded-xl text-sm font-medium border ${
+              feedback.type === "success"
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-rose-50 text-rose-700 border-rose-200"
+            }`}
+          >
+            {feedback.text}
+          </div>
+        )}
 
-        {/* Roles actuales */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Roles activos:</span>
-          {roles.includes("cliente") && (
-            <Badge variant="neutral" size="md">
-              Cliente
-            </Badge>
-          )}
-          {roles.includes("freelancer") && (
-            <Badge variant="accent" size="md">
-              Freelancer
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl text-sm font-medium border ${
-            feedback.type === "success"
-              ? "bg-green-50 text-green-800 border-green-200"
-              : "bg-red-50 text-red-700 border-red-200"
-          }`}
-        >
-          {feedback.text}
-        </div>
-      )}
-
-      {/* Selector de Rol Freelancer */}
-      <Card
-        title="Modo Freelancer"
-        description="Activa este rol si deseas ofrecer servicios profesionales, postular a órdenes y recibir pagos vía escrow."
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+        {/* Banner de Estado de Roles - Estilizado con paleta NexaVerse */}
+        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h4 className="font-semibold text-slate-900 text-sm">
-              {isFreelancer ? "Rol Freelancer: ACTIVO" : "Rol Freelancer: INACTIVO"}
-            </h4>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#40798C]">
+                Tipo de Cuenta
+              </span>
+              <Badge variant={isFreelancer ? "accent" : "neutral"} size="sm">
+                {isFreelancer ? "✓ Freelancer & Cliente" : "Cliente"}
+              </Badge>
+            </div>
+            <h2 className="text-lg font-bold text-[#1F363D]">
+              {isFreelancer ? "Cuenta con Perfil Freelancer Activo" : "Cuenta en Modo Cliente"}
+            </h2>
+            <p className="text-xs text-slate-500 mt-1 max-w-lg">
               {isFreelancer
-                ? "Tienes acceso habilitado al Panel de Freelancer y tu perfil puede recibir pedidos."
-                : "Tu cuenta actualmente solo opera en modo Cliente (contratar)."}
+                ? "Tienes habilitado el panel de trabajo para publicar servicios, recibir solicitudes de contratación y generar ingresos."
+                : "Actualmente puedes buscar, contratar y pagar servicios. Si deseas ofrecer tus habilidades y trabajar, activa tu rol de freelancer."}
             </p>
           </div>
 
           <Button
-            type="button"
-            variant={isFreelancer ? "outline" : "secondary"}
+            variant={isFreelancer ? "outline" : "primary"}
             size="sm"
-            disabled={roleUpdating}
             onClick={handleToggleFreelancerRole}
+            disabled={roleUpdating}
+            className="self-start sm:self-center shrink-0 font-bold"
           >
             {roleUpdating
               ? "Actualizando..."
               : isFreelancer
-              ? "Desactivar rol Freelancer"
-              : "Activar rol Freelancer"}
+              ? "Desactivar modo Freelancer"
+              : "🚀 Activar como Freelancer"}
           </Button>
         </div>
-      </Card>
 
-      {/* Formulario Modular de Perfil */}
-      <ProfileForm
-        data={formData}
-        email={user?.email}
-        isFreelancer={isFreelancer}
-        saving={saving}
-        onChange={handleFormDataChange}
-        onSubmit={handleSaveProfile}
-      />
+        {/* Formulario Modular de Perfil */}
+        <ProfileForm
+          data={formData}
+          email={user?.email}
+          isFreelancer={isFreelancer}
+          saving={saving}
+          onChange={handleFormDataChange}
+          onSubmit={handleSaveProfile}
+        />
 
-      {/* Sección de Reputación y Reseñas para Freelancers (Fase 6) */}
-      {isFreelancer && (
-        <div className="space-y-6 pt-4 border-t border-slate-200">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">
-              Reputación y Calificaciones Recibidas
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Testimonios reales y puntuaciones acumuladas en tus trabajos completados en WorkIn.
-            </p>
-          </div>
+        {/* Sección de Reputación y Reseñas para Freelancers */}
+        {isFreelancer && (
+          <div className="space-y-6 pt-6 border-t border-slate-200/80">
+            <div>
+              <h2 className="text-lg font-bold text-[#1F363D]">
+                Reputación y Calificaciones Recibidas
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Testimonios reales y puntuaciones acumuladas en tus trabajos completados en WorkIn.
+              </p>
+            </div>
 
-          <RatingSummaryCard
-            summary={summary}
-            title="Resumen de tu Reputación Profesional"
-          />
-
-          <div className="space-y-3">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>💬</span> Reseñas de Clientes ({summary.count})
-            </h3>
-            <ReviewsList
-              reviews={reviews}
-              loading={reviewsLoading}
-              currentUserId={user?.id}
-              onReplySuccess={handleReplyAdded}
-              emptyMessage="Aún no has recibido reseñas. Completa órdenes para construir tu historial y reputación profesional."
+            <RatingSummaryCard
+              summary={summary}
+              title="Resumen de tu Reputación Profesional"
             />
+
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-[#1F363D] flex items-center gap-2">
+                <span>💬</span> Reseñas de Clientes ({summary.count})
+              </h3>
+              <ReviewsList
+                reviews={reviews}
+                loading={reviewsLoading}
+                currentUserId={user?.id}
+                onReplySuccess={handleReplyAdded}
+                emptyMessage="Aún no has recibido reseñas. Completa órdenes para construir tu historial y reputación profesional."
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }

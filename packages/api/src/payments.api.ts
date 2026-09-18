@@ -59,7 +59,7 @@ export async function releaseEscrowPayment(
 ) {
   const { data, error } = await supabase.rpc("release_escrow_payment", {
     p_order_id: orderId,
-    p_comment: comment || null,
+    p_comment: comment || undefined,
   });
 
   return {

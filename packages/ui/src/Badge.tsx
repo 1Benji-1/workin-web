@@ -13,11 +13,11 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variantStyles = {
-    primary: "bg-primary text-white",
-    accent: "bg-accent/15 text-emerald-800 border border-accent/30",
-    neutral: "bg-slate-100 text-slate-700 border border-slate-200",
+    primary: "bg-[#1F363D] text-white",
+    accent: "bg-[#CFE0C3] text-[#1F363D] border border-[#9EC1A3]/40 font-semibold",
+    neutral: "bg-slate-100 text-[#1F363D] border border-slate-200",
     warning: "bg-amber-50 text-amber-800 border border-amber-200",
-    danger: "bg-red-50 text-red-700 border border-red-200",
+    danger: "bg-rose-50 text-rose-700 border border-rose-200",
   }[variant];
 
   const sizeStyles = {

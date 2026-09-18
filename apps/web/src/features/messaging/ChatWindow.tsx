@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { Message, ConversationWithDetails, MessageAttachment } from "@freelance/types";
 import { formatMessageDate, formatCurrency } from "@freelance/core";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Button } from "@freelance/ui";
+import { uploadMediaFile } from "../../shared/lib/storage";
 
 interface ChatWindowProps {
   conversation: ConversationWithDetails | null;
@@ -26,11 +27,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const { user } = useAuth();
   const [inputText, setInputText] = useState("");
-  const [showAttachmentModal, setShowAttachmentModal] = useState(false);
-  const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [attachmentName, setAttachmentName] = useState("");
   const [attachmentsList, setAttachmentsList] = useState<MessageAttachment[]>([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!conversation) {
     return (
@@ -76,13 +76,36 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  const handleAddAttachment = () => {
-    if (!attachmentUrl.trim()) return;
-    const name = attachmentName.trim() || attachmentUrl.split("/").pop() || "Archivo adjunto";
-    setAttachmentsList((prev) => [...prev, { name, url: attachmentUrl.trim() }]);
-    setAttachmentUrl("");
-    setAttachmentName("");
-    setShowAttachmentModal(false);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setSendError("El archivo no debe superar los 10MB.");
+      return;
+    }
+
+    setUploadingAttachment(true);
+    setSendError(null);
+
+    try {
+      const res = await uploadMediaFile(file, "attachments");
+      if (res.error) {
+        setSendError(res.error);
+      } else if (res.url) {
+        setAttachmentsList((prev) => [
+          ...prev,
+          { name: file.name, url: res.url },
+        ]);
+      }
+    } catch {
+      setSendError("Error al procesar el archivo seleccionado.");
+    } finally {
+      setUploadingAttachment(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   return (
@@ -177,8 +200,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs whitespace-pre-wrap break-words ${
                       isMine
-                        ? "bg-primary text-white rounded-br-xs"
-                        : "bg-white text-slate-800 border border-slate-200 rounded-bl-xs"
+                        ? "bg-[#40798C] text-white rounded-br-xs"
+                        : "bg-white text-[#1F363D] border border-slate-200/80 rounded-bl-xs"
                     }`}
                   >
                     {msg.content}
@@ -255,14 +278,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <p className="text-xs text-red-600 mb-2 px-1">⚠️ {sendError}</p>
         )}
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
         <form onSubmit={handleSend} className="flex items-end gap-2">
           <button
             type="button"
-            onClick={() => setShowAttachmentModal(true)}
-            className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors shrink-0"
-            title="Adjuntar archivo o enlace"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingAttachment}
+            className={`p-2.5 text-slate-500 hover:text-primary hover:bg-slate-100 rounded-xl transition-colors shrink-0 cursor-pointer ${
+              uploadingAttachment ? "opacity-50 animate-pulse" : ""
+            }`}
+            title="Adjuntar foto o archivo desde tu computadora"
           >
-            📎
+            {uploadingAttachment ? "⏳" : "📎"}
           </button>
 
           <div className="flex-1 relative">
@@ -280,65 +314,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <Button
             type="submit"
             disabled={sending || (!inputText.trim() && attachmentsList.length === 0)}
-            className="h-10 px-4 bg-primary text-white font-semibold text-xs shrink-0 rounded-xl shadow-xs"
+            className="h-10 px-4 bg-primary text-white font-semibold text-xs shrink-0 rounded-xl shadow-xs cursor-pointer"
           >
             {sending ? "..." : "Enviar ➔"}
           </Button>
         </form>
       </div>
-
-      {/* Modal para adjuntar enlace o archivo */}
-      {showAttachmentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5 space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <span>📎</span> Adjuntar Archivo o Enlace
-            </h3>
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Nombre o descripción</label>
-                <input
-                  type="text"
-                  value={attachmentName}
-                  onChange={(e) => setAttachmentName(e.target.value)}
-                  placeholder="Ej: Boceto_v1.png o Enlace Drive"
-                  className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">URL del archivo</label>
-                <input
-                  type="url"
-                  value={attachmentUrl}
-                  onChange={(e) => setAttachmentUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAttachmentModal(false)}
-                className="text-xs"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleAddAttachment}
-                disabled={!attachmentUrl.trim()}
-                className="text-xs bg-primary text-white"
-              >
-                Agregar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -34,86 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
-          full_name: string | null
-          headline: string | null
-          hourly_rate: number | null
-          id: string
-          phone: string | null
-          phone_verified: boolean
-          portfolio: Json
-          skills: string[]
-          rating_avg: number
-          reviews_count: number
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          full_name?: string | null
-          headline?: string | null
-          hourly_rate?: number | null
-          id: string
-          phone?: string | null
-          phone_verified?: boolean
-          portfolio?: Json
-          skills?: string[]
-          rating_avg?: number
-          reviews_count?: number
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          full_name?: string | null
-          headline?: string | null
-          hourly_rate?: number | null
-          id?: string
-          phone?: string | null
-          phone_verified?: boolean
-          portfolio?: Json
-          skills?: string[]
-          rating_avg?: number
-          reviews_count?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          active: boolean
-          created_at: string
-          role: Database["public"]["Enums"]["role_type"]
-          user_id: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          role: Database["public"]["Enums"]["role_type"]
-          user_id: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          role?: Database["public"]["Enums"]["role_type"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       categories: {
         Row: {
           created_at: string
@@ -140,6 +60,837 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      conversations: {
+        Row: {
+          client_id: string
+          created_at: string
+          freelancer_id: string
+          id: string
+          last_message: string | null
+          last_message_at: string
+          order_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          order_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          order_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_messages: {
+        Row: {
+          attachments: Json
+          created_at: string
+          dispute_id: string
+          id: string
+          is_support: boolean
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json
+          created_at?: string
+          dispute_id: string
+          id?: string
+          is_support?: boolean
+          message: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          is_support?: boolean
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_resolutions: {
+        Row: {
+          created_at: string
+          decision: string
+          dispute_id: string
+          freelancer_percentage: number
+          id: string
+          resolution_notes: string
+          resolver_id: string
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          dispute_id: string
+          freelancer_percentage: number
+          id?: string
+          resolution_notes: string
+          resolver_id: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          dispute_id?: string
+          freelancer_percentage?: number
+          id?: string
+          resolution_notes?: string
+          resolver_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_resolutions_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: true
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_resolutions_resolver_id_fkey"
+            columns: ["resolver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disputes: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          initiator_id: string
+          order_id: string
+          reason: string
+          respondent_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          initiator_id: string
+          order_id: string
+          reason: string
+          respondent_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          initiator_id?: string
+          order_id?: string
+          reason?: string
+          respondent_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_initiator_id_fkey"
+            columns: ["initiator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_respondent_id_fkey"
+            columns: ["respondent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_holds: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          net_amount: number
+          order_id: string
+          payment_id: string
+          platform_fee: number
+          released_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          net_amount: number
+          order_id: string
+          payment_id: string
+          platform_fee: number
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          net_amount?: number
+          order_id?: string
+          payment_id?: string
+          platform_fee?: number
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_holds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_holds_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachments: Json
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          is_read: boolean
+          message: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_read?: boolean
+          message: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_read?: boolean
+          message?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_requirements: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_completed: boolean
+          order_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          is_completed?: boolean
+          order_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_completed?: boolean
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_requirements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          changed_by: string
+          comment: string | null
+          created_at: string
+          id: string
+          new_status: string
+          order_id: string
+          previous_status: string | null
+        }
+        Insert: {
+          changed_by: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status: string
+          order_id: string
+          previous_status?: string | null
+        }
+        Update: {
+          changed_by?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string
+          order_id?: string
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          agreed_at: string | null
+          client_id: string
+          commission_amount: number | null
+          completed_at: string | null
+          created_at: string
+          delivered_at: string | null
+          delivery_days: number
+          delivery_due_date: string | null
+          description: string
+          freelancer_id: string
+          freelancer_price: number | null
+          id: string
+          package_id: string | null
+          payment_activated_at: string | null
+          price: number | null
+          service_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agreed_at?: string | null
+          client_id: string
+          commission_amount?: number | null
+          completed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_days: number
+          delivery_due_date?: string | null
+          description: string
+          freelancer_id: string
+          freelancer_price?: number | null
+          id?: string
+          package_id?: string | null
+          payment_activated_at?: string | null
+          price?: number | null
+          service_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agreed_at?: string | null
+          client_id?: string
+          commission_amount?: number | null
+          completed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_days?: number
+          delivery_due_date?: string | null
+          description?: string
+          freelancer_id?: string
+          freelancer_price?: number | null
+          id?: string
+          package_id?: string | null
+          payment_activated_at?: string | null
+          price?: number | null
+          service_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "service_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          currency: string
+          id: string
+          order_id: string
+          payment_provider: string
+          provider_transaction_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id: string
+          payment_provider?: string
+          provider_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string
+          payment_provider?: string
+          provider_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          freelancer_id: string
+          id: string
+          order_id: string
+          payout_provider: string
+          processed_at: string | null
+          provider_payout_id: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          order_id: string
+          payout_provider?: string
+          processed_at?: string | null
+          provider_payout_id?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          order_id?: string
+          payout_provider?: string
+          processed_at?: string | null
+          provider_payout_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_fees: {
+        Row: {
+          created_at: string
+          escrow_id: string
+          fee_amount: number
+          fee_percentage: number
+          id: string
+          order_id: string
+        }
+        Insert: {
+          created_at?: string
+          escrow_id: string
+          fee_amount: number
+          fee_percentage?: number
+          id?: string
+          order_id: string
+        }
+        Update: {
+          created_at?: string
+          escrow_id?: string
+          fee_amount?: number
+          fee_percentage?: number
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_fees_escrow_id_fkey"
+            columns: ["escrow_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_holds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_fees_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          headline: string | null
+          hourly_rate: number | null
+          id: string
+          phone: string | null
+          phone_verified: boolean
+          portfolio: Json
+          rating_avg: number
+          reviews_count: number
+          skills: string[]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          headline?: string | null
+          hourly_rate?: number | null
+          id: string
+          phone?: string | null
+          phone_verified?: boolean
+          portfolio?: Json
+          rating_avg?: number
+          reviews_count?: number
+          skills?: string[]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          headline?: string | null
+          hourly_rate?: number | null
+          id?: string
+          phone?: string | null
+          phone_verified?: boolean
+          portfolio?: Json
+          rating_avg?: number
+          reviews_count?: number
+          skills?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          client_id: string
+          comment: string
+          created_at: string
+          freelancer_id: string
+          freelancer_replied_at: string | null
+          freelancer_reply: string | null
+          id: string
+          order_id: string
+          rating: number
+          service_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          comment: string
+          created_at?: string
+          freelancer_id: string
+          freelancer_replied_at?: string | null
+          freelancer_reply?: string | null
+          id?: string
+          order_id: string
+          rating: number
+          service_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          comment?: string
+          created_at?: string
+          freelancer_id?: string
+          freelancer_replied_at?: string | null
+          freelancer_reply?: string | null
+          id?: string
+          order_id?: string
+          rating?: number
+          service_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_packages: {
+        Row: {
+          created_at: string
+          delivery_days: number
+          description: string
+          id: string
+          price: number
+          revisions: number
+          service_id: string
+          tier: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_days?: number
+          description: string
+          id?: string
+          price: number
+          revisions?: number
+          service_id: string
+          tier: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          delivery_days?: number
+          description?: string
+          id?: string
+          price?: number
+          revisions?: number
+          service_id?: string
+          tier?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_packages_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {
@@ -204,779 +955,28 @@ export type Database = {
           },
         ]
       }
-      service_packages: {
+      user_roles: {
         Row: {
+          active: boolean
           created_at: string
-          delivery_days: number
-          description: string
-          id: string
-          price: number
-          revisions: number
-          service_id: string
-          tier: string
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          delivery_days?: number
-          description: string
-          id?: string
-          price: number
-          revisions?: number
-          service_id: string
-          tier: string
-          title: string
-        }
-        Update: {
-          created_at?: string
-          delivery_days?: number
-          description?: string
-          id?: string
-          price?: number
-          revisions?: number
-          service_id?: string
-          tier?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "service_packages_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      orders: {
-        Row: {
-          id: string
-          client_id: string
-          freelancer_id: string
-          service_id: string | null
-          package_id: string | null
-          title: string
-          description: string
-          price: number | null
-          freelancer_price: number | null
-          commission_amount: number | null
-          delivery_days: number
-          status: string
-          agreed_at: string | null
-          payment_activated_at: string | null
-          delivery_due_date: string | null
-          delivered_at: string | null
-          completed_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          freelancer_id: string
-          service_id?: string | null
-          package_id?: string | null
-          title: string
-          description: string
-          price?: number | null
-          freelancer_price?: number | null
-          commission_amount?: number | null
-          delivery_days: number
-          status?: string
-          agreed_at?: string | null
-          payment_activated_at?: string | null
-          delivery_due_date?: string | null
-          delivered_at?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          freelancer_id?: string
-          service_id?: string | null
-          package_id?: string | null
-          title?: string
-          description?: string
-          price?: number | null
-          freelancer_price?: number | null
-          commission_amount?: number | null
-          delivery_days?: number
-          status?: string
-          agreed_at?: string | null
-          payment_activated_at?: string | null
-          delivery_due_date?: string | null
-          delivered_at?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_package_id_fkey"
-            columns: ["package_id"]
-            isOneToOne: false
-            referencedRelation: "service_packages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      order_requirements: {
-        Row: {
-          id: string
-          order_id: string
-          description: string
-          is_completed: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          description: string
-          is_completed?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          description?: string
-          is_completed?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_requirements_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      order_status_history: {
-        Row: {
-          id: string
-          order_id: string
-          previous_status: string | null
-          new_status: string
-          changed_by: string
-          comment: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          previous_status?: string | null
-          new_status: string
-          changed_by: string
-          comment?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          previous_status?: string | null
-          new_status?: string
-          changed_by?: string
-          comment?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_status_history_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_status_history_changed_by_fkey"
-            columns: ["changed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments: {
-        Row: {
-          id: string
-          order_id: string
-          client_id: string
-          amount: number
-          currency: string
-          status: string
-          payment_provider: string
-          provider_transaction_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          client_id: string
-          amount: number
-          currency?: string
-          status?: string
-          payment_provider?: string
-          provider_transaction_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          client_id?: string
-          amount?: number
-          currency?: string
-          status?: string
-          payment_provider?: string
-          provider_transaction_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      escrow_holds: {
-        Row: {
-          id: string
-          order_id: string
-          payment_id: string
-          amount: number
-          platform_fee: number
-          net_amount: number
-          status: string
-          released_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          payment_id: string
-          amount: number
-          platform_fee: number
-          net_amount: number
-          status?: string
-          released_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          payment_id?: string
-          amount?: number
-          platform_fee?: number
-          net_amount?: number
-          status?: string
-          released_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "escrow_holds_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: true
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escrow_holds_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payouts: {
-        Row: {
-          id: string
-          order_id: string
-          freelancer_id: string
-          amount: number
-          status: string
-          payout_provider: string
-          provider_payout_id: string | null
-          processed_at: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          freelancer_id: string
-          amount: number
-          status?: string
-          payout_provider?: string
-          provider_payout_id?: string | null
-          processed_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          freelancer_id?: string
-          amount?: number
-          status?: string
-          payout_provider?: string
-          provider_payout_id?: string | null
-          processed_at?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payouts_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payouts_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      platform_fees: {
-        Row: {
-          id: string
-          order_id: string
-          escrow_id: string
-          fee_percentage: number
-          fee_amount: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          escrow_id: string
-          fee_percentage?: number
-          fee_amount: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          escrow_id?: string
-          fee_percentage?: number
-          fee_amount?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "platform_fees_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "platform_fees_escrow_id_fkey"
-            columns: ["escrow_id"]
-            isOneToOne: false
-            referencedRelation: "escrow_holds"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      disputes: {
-        Row: {
-          id: string
-          order_id: string
-          initiator_id: string
-          respondent_id: string
-          reason: string
-          description: string
-          status: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          initiator_id: string
-          respondent_id: string
-          reason: string
-          description: string
-          status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          initiator_id?: string
-          respondent_id?: string
-          reason?: string
-          description?: string
-          status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "disputes_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "disputes_initiator_id_fkey"
-            columns: ["initiator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "disputes_respondent_id_fkey"
-            columns: ["respondent_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dispute_messages: {
-        Row: {
-          id: string
-          dispute_id: string
-          sender_id: string
-          message: string
-          attachments: Json
-          is_support: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          dispute_id: string
-          sender_id: string
-          message: string
-          attachments?: Json
-          is_support?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          dispute_id?: string
-          sender_id?: string
-          message?: string
-          attachments?: Json
-          is_support?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dispute_messages_dispute_id_fkey"
-            columns: ["dispute_id"]
-            isOneToOne: false
-            referencedRelation: "disputes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispute_messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dispute_resolutions: {
-        Row: {
-          id: string
-          dispute_id: string
-          resolver_id: string
-          decision: string
-          freelancer_percentage: number
-          resolution_notes: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          dispute_id: string
-          resolver_id: string
-          decision: string
-          freelancer_percentage: number
-          resolution_notes: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          dispute_id?: string
-          resolver_id?: string
-          decision?: string
-          freelancer_percentage?: number
-          resolution_notes?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dispute_resolutions_dispute_id_fkey"
-            columns: ["dispute_id"]
-            isOneToOne: true
-            referencedRelation: "disputes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispute_resolutions_resolver_id_fkey"
-            columns: ["resolver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reviews: {
-        Row: {
-          id: string
-          order_id: string
-          client_id: string
-          freelancer_id: string
-          service_id: string | null
-          rating: number
-          comment: string
-          freelancer_reply: string | null
-          freelancer_replied_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          client_id: string
-          freelancer_id: string
-          service_id?: string | null
-          rating: number
-          comment: string
-          freelancer_reply?: string | null
-          freelancer_replied_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          client_id?: string
-          freelancer_id?: string
-          service_id?: string | null
-          rating?: number
-          comment?: string
-          freelancer_reply?: string | null
-          freelancer_replied_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: true
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      conversations: {
-        Row: {
-          id: string
-          client_id: string
-          freelancer_id: string
-          order_id: string | null
-          last_message: string | null
-          last_message_at: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          freelancer_id: string
-          order_id?: string | null
-          last_message?: string | null
-          last_message_at?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          freelancer_id?: string
-          order_id?: string | null
-          last_message?: string | null
-          last_message_at?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          id: string
-          conversation_id: string
-          sender_id: string
-          content: string
-          attachments: Json
-          is_read: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          conversation_id: string
-          sender_id: string
-          content: string
-          attachments?: Json
-          is_read?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          conversation_id?: string
-          sender_id?: string
-          content?: string
-          attachments?: Json
-          is_read?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          id: string
+          role: Database["public"]["Enums"]["role_type"]
           user_id: string
-          title: string
-          message: string
-          type: string
-          data: Json
-          is_read: boolean
-          read_at: string | null
-          created_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          title: string
-          message: string
-          type: string
-          data?: Json
-          is_read?: boolean
-          read_at?: string | null
+          active?: boolean
           created_at?: string
+          role: Database["public"]["Enums"]["role_type"]
+          user_id: string
         }
         Update: {
-          id?: string
+          active?: boolean
+          created_at?: string
+          role?: Database["public"]["Enums"]["role_type"]
           user_id?: string
-          title?: string
-          message?: string
-          type?: string
-          data?: Json
-          is_read?: boolean
-          read_at?: string | null
-          created_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_user_id_fkey"
+            foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -990,47 +990,84 @@ export type Database = {
     }
     Functions: {
       activate_order_payment: {
-        Args: {
-          p_order_id: string
-          p_freelancer_price: number
+        Args: { p_freelancer_price: number; p_order_id: string }
+        Returns: {
+          agreed_at: string | null
+          client_id: string
+          commission_amount: number | null
+          completed_at: string | null
+          created_at: string
+          delivered_at: string | null
+          delivery_days: number
+          delivery_due_date: string | null
+          description: string
+          freelancer_id: string
+          freelancer_price: number | null
+          id: string
+          package_id: string | null
+          payment_activated_at: string | null
+          price: number | null
+          service_id: string | null
+          status: string
+          title: string
+          updated_at: string
         }
-        Returns: Database["public"]["Tables"]["orders"]["Row"]
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      process_simulated_escrow_payment: {
+      admin_update_user_role: {
         Args: {
-          p_order_id: string
-          p_payment_method?: string
+          p_active: boolean
+          p_role: Database["public"]["Enums"]["role_type"]
+          p_user_id: string
         }
         Returns: Json
       }
-      release_escrow_payment: {
+      get_admin_dashboard_metrics: { Args: never; Returns: Json }
+      has_role: {
         Args: {
+          check_role: Database["public"]["Enums"]["role_type"]
+          lookup_user_id: string
+        }
+        Returns: boolean
+      }
+      is_support_or_admin: {
+        Args: { lookup_user_id: string }
+        Returns: boolean
+      }
+      open_order_dispute: {
+        Args: {
+          p_description: string
+          p_initial_message?: string
           p_order_id: string
-          p_comment?: string | null
+          p_reason: string
         }
         Returns: Json
       }
       partial_release_escrow_payment: {
         Args: {
-          p_order_id: string
           p_freelancer_percentage: number
+          p_order_id: string
           p_reason: string
         }
         Returns: Json
       }
-      open_order_dispute: {
-        Args: {
-          p_order_id: string
-          p_reason: string
-          p_description: string
-          p_initial_message?: string | null
-        }
+      process_simulated_escrow_payment: {
+        Args: { p_order_id: string; p_payment_method?: string }
+        Returns: Json
+      }
+      release_escrow_payment: {
+        Args: { p_comment?: string; p_order_id: string }
         Returns: Json
       }
       resolve_order_dispute: {
         Args: {
-          p_dispute_id: string
           p_decision: string
+          p_dispute_id: string
           p_freelancer_percentage: number
           p_resolution_notes: string
         }

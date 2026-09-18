@@ -10,7 +10,7 @@ interface ServiceCardProps {
 
 export function ServiceCard({ service }: ServiceCardProps) {
   return (
-    <div className="group rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+    <div className="group rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col justify-between hover:border-[#70A9A1]/60">
       <div>
         {/* Cover Image / Placeholder */}
         <Link to={`/services/${service.id}`} className="block relative aspect-[16/9] bg-slate-100 overflow-hidden">
@@ -82,21 +82,22 @@ export function ServiceCard({ service }: ServiceCardProps) {
       </div>
 
       {/* Footer / Price & CTA */}
-      <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50 flex items-center justify-between">
+      <div className="border-t border-slate-100 px-5 py-3.5 bg-slate-50/60 flex items-center justify-between">
         <div>
-          <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
             Desde
           </span>
-          <span className="text-base font-extrabold text-primary">
+          <span className="text-base font-black text-[#1F363D]">
             {formatCurrency(service.price)}
           </span>
         </div>
 
         <Link
           to={`/services/${service.id}`}
-          className="text-xs font-semibold text-primary hover:text-slate-700 underline"
+          className="text-xs font-bold text-[#40798C] hover:text-[#1F363D] transition-colors flex items-center gap-1"
         >
-          Ver servicio →
+          <span>Ver servicio</span>
+          <span>→</span>
         </Link>
       </div>
     </div>

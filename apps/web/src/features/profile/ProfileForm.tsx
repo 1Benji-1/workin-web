@@ -3,6 +3,7 @@ import type { PortfolioItem } from "@freelance/types";
 import { Card, Input, Button, Badge } from "@freelance/ui";
 import { SkillsTags } from "./SkillsTags";
 import { PortfolioSection } from "./PortfolioSection";
+import { ImageUpload } from "../../shared/components/ImageUpload";
 
 export interface ProfileFormData {
   fullName: string;
@@ -87,14 +88,14 @@ export function ProfileForm({
             </div>
           </div>
 
-          <div className="sm:col-span-2">
-            <Input
-              label="URL de Foto de Perfil (Avatar)"
-              type="url"
+          <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+            <ImageUpload
+              label="Foto de Perfil (Avatar)"
+              mode="avatar"
+              folder="avatars"
               value={data.avatarUrl}
-              onChange={(e) => onChange({ avatarUrl: e.target.value })}
-              placeholder="https://ejemplo.com/avatar.jpg"
-              helperText="En la Fase 2 podrás subir archivos directamente a Supabase Storage."
+              onChange={(url) => onChange({ avatarUrl: url })}
+              helperText="Selecciona una imagen desde tu computadora (PNG, JPG o WebP)."
             />
           </div>
         </div>

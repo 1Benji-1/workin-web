@@ -10,7 +10,6 @@ export default function FreelancerRegisterForm() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [headline, setHeadline] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
 
@@ -35,11 +34,9 @@ export default function FreelancerRegisterForm() {
       }
 
       // 2. Guardar datos extendidos del perfil profesional
-      const parsedRate = hourlyRate ? parseFloat(hourlyRate) : null;
       await updateProfileData({
         phone: phone.trim() || undefined,
         headline: headline.trim() || undefined,
-        hourlyRate: parsedRate,
         bio: bio.trim() || undefined,
         skills: skills.length > 0 ? skills : undefined,
       });
@@ -137,29 +134,15 @@ export default function FreelancerRegisterForm() {
               2. Perfil Profesional
             </h3>
 
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <Input
-                  label="Especialidad o Título Profesional"
-                  type="text"
-                  placeholder="Ej: Desarrollador Frontend React & UI/UX"
-                  value={headline}
-                  onChange={(e) => setHeadline(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Tarifa Estimada (Bs / hora)"
-                  type="number"
-                  step="1"
-                  min="1"
-                  placeholder="Ej: 150.00"
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(e.target.value)}
-                />
-              </div>
+            <div>
+              <Input
+                label="Especialidad o Título Profesional"
+                type="text"
+                placeholder="Ej: Desarrollador Frontend React & UI/UX"
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value)}
+                required
+              />
             </div>
 
             <div>

@@ -8,6 +8,7 @@ export function Navbar() {
   const { user, roles, primaryRole } = useAuth();
   const { categories } = useCategories();
   const location = useLocation();
+  const isHome = location.pathname === "/";
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,16 +36,27 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Rutas que ya cuentan con DashboardLayout o AdminLayout (tienen su propio sidebar y header)
+  const isDashboardRoute =
+    location.pathname.startsWith("/client/dashboard") ||
+    location.pathname.startsWith("/freelancer/dashboard") ||
+    location.pathname.startsWith("/orders") ||
+    location.pathname.startsWith("/messages") ||
+    location.pathname.startsWith("/notifications") ||
+    location.pathname.startsWith("/profile") ||
+    location.pathname.startsWith("/admin");
+
+  if (isDashboardRoute) {
+    return null;
+  }
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-2xs">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Logo & Dropdown de Categorías */}
         <div className="flex items-center gap-6 md:gap-8">
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary tracking-tight">
-            <span className="w-8 h-8 rounded-lg bg-primary text-accent flex items-center justify-center font-black text-lg shadow-sm">
-              W
-            </span>
-            <span>WorkIn</span>
+          <Link to="/" className="font-futura font-extrabold text-2xl text-[#1F363D] tracking-tight hover:opacity-90 transition-opacity">
+            WorkIn
           </Link>
 
           <nav className="hidden md:flex items-center">
@@ -109,11 +121,13 @@ export function Navbar() {
         {/* Zona derecha: Sesión / Dashboard */}
         <div className="flex items-center gap-3">
           {user ? (
-            <Link to={dashboardUrl}>
-              <Button size="sm" variant="primary" className="text-xs py-1.5 px-4 font-semibold">
-                Dashboard
-              </Button>
-            </Link>
+            isHome && (
+              <Link to={dashboardUrl}>
+                <Button size="sm" variant="primary" className="text-xs py-1.5 px-4 font-semibold">
+                  Dashboard
+                </Button>
+              </Link>
+            )
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login">
@@ -168,14 +182,18 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-100">
-            {user ? (
-              <Link to={dashboardUrl} className="block">
-                <Button size="sm" className="w-full text-xs py-2">
-                  Ir al Dashboard
-                </Button>
-              </Link>
-            ) : (
+          {user ? (
+            isHome && (
+              <div className="pt-2 border-t border-slate-100">
+                <Link to={dashboardUrl} className="block">
+                  <Button size="sm" className="w-full text-xs py-2">
+                    Ir al Dashboard
+                  </Button>
+                </Link>
+              </div>
+            )
+          ) : (
+            <div className="pt-2 border-t border-slate-100">
               <div className="flex flex-col gap-2">
                 <Link to="/login" className="block">
                   <Button variant="outline" size="sm" className="w-full text-xs py-2">
@@ -188,8 +206,8 @@ export function Navbar() {
                   </Button>
                 </Link>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </header>

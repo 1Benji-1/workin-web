@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useNotifications } from "../../hooks/useNotifications";
 import { NotificationItem } from "./NotificationItem";
 import { Button } from "@freelance/ui";
+import { DashboardLayout } from "../../shared/components/DashboardLayout";
 
 type FilterTab = "todas" | "no_leidas" | "ordenes" | "mensajes" | "disputas";
 
@@ -60,106 +61,105 @@ export function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Cabecera de la Página */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-              <Link to="/" className="hover:text-primary transition-colors">
-                Inicio
-              </Link>
-              <span>/</span>
-              <span className="text-slate-800 font-medium">Notificaciones</span>
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-              <span>Centro de Notificaciones</span>
-              {unreadCount > 0 && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                  {unreadCount} sin leer
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Historial en tiempo real de actualizaciones de pagos en escrow, entregas, disputas y chat.
-            </p>
-          </div>
+    <DashboardLayout
+      title="Centro de Notificaciones"
+      subtitle="Historial en tiempo real de actualizaciones de pagos en escrow, entregas, disputas y chat."
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refresh()}
+            title="Actualizar notificaciones"
+            className="p-2 text-slate-500 hover:text-[#1F363D] hover:bg-white rounded-xl border border-slate-200 transition-colors shadow-2xs"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
 
-          {/* Acciones principales */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => refresh()}
-              title="Actualizar notificaciones"
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-lg border border-slate-200 transition-colors"
+          {unreadCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsRead()}
+              className="text-xs bg-white"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-
-            {unreadCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => markAllAsRead()}
-                className="text-xs bg-white"
-              >
-                ✓ Marcar todas como leídas
-              </Button>
-            )}
-          </div>
+              ✓ Marcar todas como leídas
+            </Button>
+          )}
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Pestañas de Filtro - Pills redondeadas estilo diseno.png */}
+        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-white rounded-2xl sm:rounded-full border border-slate-200/80 shadow-2xs overflow-x-auto max-w-full scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setActiveTab("todas")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "todas"
+                ? "bg-[#1F363D] text-white shadow-xs"
+                : "text-slate-600 hover:text-[#1F363D]"
+            }`}
+          >
+            Todas ({tabCounts.todas})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("no_leidas")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "no_leidas"
+                ? "bg-[#40798C] text-white shadow-xs"
+                : "text-slate-600 hover:text-[#1F363D]"
+            }`}
+          >
+            Sin leer ({tabCounts.no_leidas})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("ordenes")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "ordenes"
+                ? "bg-[#70A9A1] text-white shadow-xs"
+                : "text-slate-600 hover:text-[#1F363D]"
+            }`}
+          >
+            Órdenes ({tabCounts.ordenes})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("mensajes")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "mensajes"
+                ? "bg-[#9EC1A3] text-[#1F363D] shadow-xs"
+                : "text-slate-600 hover:text-[#1F363D]"
+            }`}
+          >
+            Mensajes ({tabCounts.mensajes})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("disputas")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "disputas"
+                ? "bg-rose-600 text-white shadow-xs"
+                : "text-slate-600 hover:text-[#1F363D]"
+            }`}
+          >
+            Disputas ({tabCounts.disputas})
+          </button>
         </div>
 
-        {/* Pestañas de Filtrado */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
-          {(
-            [
-              { id: "todas", label: "Todas" },
-              { id: "no_leidas", label: "No leídas" },
-              { id: "ordenes", label: "Órdenes y Pagos" },
-              { id: "mensajes", label: "Mensajes" },
-              { id: "disputas", label: "Disputas" },
-            ] as const
-          ).map((tab) => {
-            const count = tabCounts[tab.id];
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                  isActive
-                    ? "bg-primary text-accent font-bold shadow-sm"
-                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive
-                      ? "bg-accent/20 text-accent font-black"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Contenedor Principal de la Lista */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Tarjeta de Lista de Notificaciones */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
           {isLoading && notifications.length === 0 ? (
             <div className="py-16 text-center space-y-3">
-              <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-8 h-8 border-3 border-[#40798C] border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-sm text-slate-400">Cargando tus notificaciones...</p>
             </div>
           ) : filteredNotifications.length > 0 ? (
@@ -191,7 +191,7 @@ export function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("todas")}
-                  className="mt-4 text-xs font-semibold text-primary hover:underline"
+                  className="mt-4 text-xs font-bold text-[#40798C] hover:underline"
                 >
                   Ver todas las notificaciones
                 </button>
@@ -200,6 +200,6 @@ export function NotificationsPage() {
           )}
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

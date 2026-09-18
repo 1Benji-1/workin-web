@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button, Badge } from "@freelance/ui";
 import { calculatePlatformFee, formatCurrency } from "@freelance/core";
@@ -14,6 +14,7 @@ export default function HomePage() {
   const location = useLocation();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const resultsRef = useRef<HTMLElement>(null);
 
   const { services, loading: servicesLoading, error: servicesError } = useServices({
     searchQuery: searchQuery || undefined,
@@ -23,8 +24,13 @@ export default function HomePage() {
   const isFreelancer = roles.includes("freelancer");
   const sampleFee = calculatePlatformFee(100);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = (query: string, shouldScroll = true) => {
     setSearchQuery(query);
+    if (shouldScroll) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
   };
 
   return (
@@ -52,101 +58,130 @@ export default function HomePage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200 py-12 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold">
-              <span>🛡️</span>
-              <span>Protección Escrow en cada contratación</span>
-            </div>
+      <section
+        className={`relative overflow-hidden bg-gradient-to-b from-[#1F363D] via-[#2A4852] to-[#1F363D] text-white flex flex-col justify-center transition-all ${
+          user
+            ? "min-h-[calc(100vh-4rem)] py-20 sm:py-28"
+            : "min-h-[calc(100vh-4rem)] py-16 sm:py-24"
+        }`}
+      >
+        {/* Glow de fondo decorativo estilo NexaVerse */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[900px] h-[300px] sm:h-[450px] bg-[#40798C]/20 blur-[120px] rounded-full pointer-events-none" />
 
-            <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center my-auto">
+          <div className="text-center w-full max-w-5xl mx-auto space-y-6 flex flex-col items-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight sm:leading-[1.1] text-center max-w-4xl">
               Encuentra talento experto o{" "}
-              <span className="text-primary underline decoration-accent decoration-4">
+              <span className="text-[#9EC1A3] underline decoration-[#70A9A1] decoration-4 underline-offset-8">
                 consigue proyectos
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
-              La plataforma freelance universitaria y profesional donde tu pago se retiene de forma segura hasta que apruebes la entrega.
+            <p className="text-base sm:text-xl text-slate-200/90 max-w-3xl mx-auto font-normal text-center leading-relaxed">
+              La plataforma freelance donde tus fondos se retienen de forma segura en custodia hasta que apruebes la entrega final.
             </p>
 
-            {/* Buscador Principal */}
-            <div className="pt-4 max-w-2xl mx-auto">
+            {/* Buscador Principal Centrado y Amplio */}
+            <div className="pt-2 w-full max-w-3xl sm:max-w-4xl mx-auto">
               <SearchBar
+                initialValue={searchQuery}
                 onSearch={handleSearch}
                 placeholder="¿Qué servicio buscas hoy? (ej. Diseño de logo, App en Flutter, React...)"
               />
             </div>
-          </div>
 
-          {/* Dual Entry Points (Upwork style: Quiero contratar / Quiero trabajar) */}
-          <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
-            {/* Card Contratar */}
-            <div className="relative group overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold">
-                  💼
-                </span>
-                <Badge variant="primary" size="sm">
-                  Para Clientes
-                </Badge>
-              </div>
-              <h2 className="text-xl font-bold text-slate-900 mb-2">
-                Quiero contratar talento
-              </h2>
-              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                Explora paquetes de servicios con precios fijos, tiempos claros y pagos en custodia. Solo liberas el dinero cuando el trabajo esté completado.
-              </p>
-              <div className="flex items-center gap-3">
-                <a
-                  href="#servicios"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
+            {/* Búsquedas Populares */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs sm:text-sm text-slate-200/90">
+              <span className="text-[#CFE0C3] font-semibold">Tendencias:</span>
+              {["Diseño UI/UX", "Desarrollo Web", "Logotipos", "Apps Móviles", "WordPress", "Traducción"].map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => handleSearch(term, true)}
+                  className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-slate-100 hover:text-white transition-all text-xs cursor-pointer hover:border-[#9EC1A3]/50 shadow-2xs backdrop-blur-xs"
                 >
-                  Ver servicios disponibles →
-                </a>
-              </div>
-            </div>
-
-            {/* Card Trabajar */}
-            <div className="relative group overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-2xl font-bold">
-                  🚀
-                </span>
-                <Badge variant="accent" size="sm">
-                  Para Freelancers
-                </Badge>
-              </div>
-              <h2 className="text-xl font-bold text-slate-900 mb-2">
-                Quiero trabajar como freelancer
-              </h2>
-              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                Publica tus habilidades en paquetes de servicio, define tus precios y trabaja con la tranquilidad de que el cliente ya depositó antes de comenzar.
-              </p>
-              <div className="flex items-center gap-3">
-                {isFreelancer ? (
-                  <Link to="/services/new">
-                    <Button size="sm">
-                      + Publicar un servicio ahora
-                    </Button>
-                  </Link>
-                ) : user ? (
-                  <Link to="/profile">
-                    <Button size="sm" variant="outline">
-                      Activar rol Freelancer
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link to="/register/freelancer">
-                    <Button size="sm">
-                      Registrarme para trabajar
-                    </Button>
-                  </Link>
-                )}
-              </div>
+                  {term}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* Dual Entry Points - Solo visible para visitantes no autenticados */}
+          {!user && (
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-5 mt-8 sm:mt-10 max-w-3xl mx-auto w-full">
+              {/* Card Contratar */}
+              <div className="relative group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.12] backdrop-blur-md p-4 sm:p-5 shadow-lg hover:border-[#70A9A1]/60 transition-all duration-300 text-left flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-8 rounded-lg bg-[#40798C]/30 border border-[#40798C]/50 flex items-center justify-center text-base">
+                        💼
+                      </span>
+                      <span className="text-[11px] font-bold text-[#CFE0C3] uppercase tracking-wider">
+                        Para Clientes
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-300/70 group-hover:text-white transition-colors">
+                      Contratar
+                    </span>
+                  </div>
+
+                  <h2 className="text-base font-bold text-white mb-1 group-hover:text-[#CFE0C3] transition-colors">
+                    Quiero contratar talento
+                  </h2>
+                  <p className="text-xs text-slate-200/80 leading-relaxed line-clamp-2">
+                    Servicios a precio fijo con garantía Escrow. El dinero solo se libera tras tu visto bueno.
+                  </p>
+                </div>
+
+                <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
+                  <a
+                    href="#servicios"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9EC1A3] hover:text-[#CFE0C3] transition-colors"
+                  >
+                    <span>Explorar servicios</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Card Trabajar */}
+              <div className="relative group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.12] backdrop-blur-md p-4 sm:p-5 shadow-lg hover:border-[#9EC1A3]/60 transition-all duration-300 text-left flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-8 rounded-lg bg-[#9EC1A3]/20 border border-[#9EC1A3]/40 flex items-center justify-center text-base">
+                        🚀
+                      </span>
+                      <span className="text-[11px] font-bold text-[#CFE0C3] uppercase tracking-wider">
+                        Para Freelancers
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-300/70 group-hover:text-white transition-colors">
+                      Trabajar
+                    </span>
+                  </div>
+
+                  <h2 className="text-base font-bold text-white mb-1 group-hover:text-[#9EC1A3] transition-colors">
+                    Quiero trabajar como freelancer
+                  </h2>
+                  <p className="text-xs text-slate-200/80 leading-relaxed line-clamp-2">
+                    Publica tus paquetes, establece tus tarifas y asegura tus ingresos antes de iniciar cada entrega.
+                  </p>
+                </div>
+
+                <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
+                  <Link
+                    to="/register/freelancer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9EC1A3] hover:text-[#CFE0C3] transition-colors"
+                  >
+                    <span>Registrarme gratis</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -188,7 +223,7 @@ export default function HomePage() {
       </section>
 
       {/* Servicios Destacados / Recientes */}
-      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <section ref={resultsRef} id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 scroll-mt-20">
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2">

@@ -11,6 +11,7 @@ import { useOrders } from "../../hooks/useOrders";
 import { getOrderStatusMeta, canFreelancerActivatePayment, formatCurrency } from "@freelance/core";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { Card, Button, Badge } from "@freelance/ui";
+import { DashboardLayout } from "../../shared/components/DashboardLayout";
 import { PayoutHistory } from "../payments";
 import { RatingStars } from "../reviews";
 
@@ -83,95 +84,85 @@ export default function FreelancerDashboard() {
     .reduce((acc, p) => acc + p.amount, 0);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="accent" size="sm">
-              Panel Exclusivo Freelancer
-            </Badge>
-            <span className="text-xs text-slate-400">Punto de control de actividad</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-primary">
-            Mi Panel de Trabajo
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Bienvenido, {profile?.fullName || user?.email}. Administra tus ofertas, órdenes y pagos.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
+    <DashboardLayout
+      title="Dashboard"
+      subtitle={`Bienvenido, ${profile?.fullName || user?.email}. Administra tus ofertas, contratos y finanzas.`}
+      actions={
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <Link to="/orders">
             <Button variant="outline" size="sm">
-              Ver Todas las Órdenes ({myOrders.length})
+              Ver Órdenes ({myOrders.length})
             </Button>
           </Link>
           <Link to="/services/new">
-            <Button size="sm">
-              + Publicar Nuevo Servicio
+            <Button variant="primary" size="sm">
+              + Publicar Servicio
             </Button>
           </Link>
         </div>
-      </div>
-
-      {/* Resumen Financiero y de Actividad */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-white border-slate-200">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Fondos en Custodia</span>
-            <span>🛡️</span>
+      }
+    >
+      {/* Resumen Financiero y de Actividad - 4 Bloques de Color estilo diseno.png & paleta.png */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+        {/* KPI 1: #40798C (Azul-Verdoso) */}
+        <div className="bg-[#40798C] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+          <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-semibold tracking-wider">
+            <span className="truncate">FONDOS EN CUSTODIA</span>
+            <span className="text-base flex-shrink-0">🛡️</span>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-primary">{formatCurrency(escrowHeld)}</span>
+          <div className="mt-3 sm:mt-4">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight block truncate">{formatCurrency(escrowHeld)}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Retenidos en órdenes en curso.
+          <p className="text-[11px] text-white/80 mt-2 font-medium truncate">
+            Garantizado en órdenes activas.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-5 bg-white border-slate-200">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Ganancias Netas</span>
-            <span>💵</span>
+        {/* KPI 2: #70A9A1 (Verde Agua) */}
+        <div className="bg-[#70A9A1] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+          <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-semibold tracking-wider">
+            <span className="truncate">GANANCIAS NETAS</span>
+            <span className="text-base flex-shrink-0">💵</span>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{formatCurrency(releasedEarnings)}</span>
+          <div className="mt-3 sm:mt-4">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight block truncate">{formatCurrency(releasedEarnings)}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Liberadas tras entrega conforme.
+          <p className="text-[11px] text-white/80 mt-2 font-medium truncate">
+            Disponibles tras entrega aprobada.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-5 bg-white border-slate-200">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Servicios Activos</span>
-            <span>💼</span>
+        {/* KPI 3: #9EC1A3 (Verde Pastel) */}
+        <div className="bg-[#9EC1A3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+          <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-bold tracking-wider">
+            <span className="truncate">SERVICIOS ACTIVOS</span>
+            <span className="text-base flex-shrink-0">💼</span>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-800">{myServices.length}</span>
-            <span className="text-xs text-slate-400">ofertas</span>
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight">{myServices.length}</span>
+            <span className="text-xs font-bold text-[#1F363D]/70">ofertas</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {myServices.filter((s) => s.status === "active").length} ofertas activas.
+          <p className="text-[11px] text-[#1F363D]/80 mt-2 font-medium truncate">
+            {myServices.filter((s) => s.status === "active").length} visibles en marketplace.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-5 bg-white border-slate-200">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Reputación</span>
-            <span>⭐</span>
+        {/* KPI 4: #CFE0C3 (Menta Claro) */}
+        <div className="bg-[#CFE0C3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm transition-transform hover:-translate-y-0.5 min-w-0 flex flex-col justify-between">
+          <div className="flex items-center justify-between opacity-90 text-[11px] sm:text-xs font-bold tracking-wider">
+            <span className="truncate">REPUTACIÓN</span>
+            <span className="text-base flex-shrink-0">⭐</span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-2xl font-black text-slate-900">
+          <div className="mt-3 sm:mt-4 flex items-center gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight">
               {profile?.ratingAvg ? Number(profile.ratingAvg).toFixed(1) : "5.0"}
             </span>
             <RatingStars rating={profile?.ratingAvg ? Number(profile.ratingAvg) : 5.0} size="xs" />
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {profile?.reviewsCount ?? 0} {profile?.reviewsCount === 1 ? "reseña recibida" : "reseñas recibidas"}.
+          <p className="text-[11px] text-[#1F363D]/80 mt-2 font-medium truncate">
+            {profile?.reviewsCount ?? 0} {profile?.reviewsCount === 1 ? "reseña" : "reseñas recibidas"}.
           </p>
-        </Card>
+        </div>
       </div>
 
       {/* Sección 1: Mis Servicios Publicados */}
@@ -188,15 +179,15 @@ export default function FreelancerDashboard() {
             {myServices.map((srv) => (
               <div
                 key={srv.id}
-                className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-xl flex-shrink-0 border border-slate-200">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-slate-100 flex items-center justify-center text-xl flex-shrink-0 border border-slate-200">
                     {srv.category?.icon || "💼"}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-sm text-slate-900">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-semibold text-sm text-slate-900 truncate">
                         {srv.title}
                       </h4>
                       <Badge
@@ -206,7 +197,7 @@ export default function FreelancerDashboard() {
                         {srv.status === "active" ? "Activo" : "Pausado"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
                       {srv.category?.name} · Entrega en {srv.delivery_days} días · ⭐ {Number(srv.rating).toFixed(1)}
                     </p>
                     <span className="text-xs font-bold text-primary inline-block mt-1">
@@ -215,7 +206,7 @@ export default function FreelancerDashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex-shrink-0">
                   <Link to={`/services/${srv.id}`}>
                     <Button variant="ghost" size="sm">
                       Ver público
@@ -231,7 +222,7 @@ export default function FreelancerDashboard() {
                     size="sm"
                     disabled={statusUpdatingId === srv.id}
                     onClick={() => handleToggleServiceStatus(srv.id, srv.status)}
-                    className="text-xs text-slate-500"
+                    className="text-xs text-slate-500 cursor-pointer"
                   >
                     {srv.status === "active" ? "Pausar" : "Reactivar"}
                   </Button>
@@ -277,10 +268,10 @@ export default function FreelancerDashboard() {
               return (
                 <div
                   key={ord.id}
-                  className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge variant={meta.badgeVariant} size="sm">
                         {meta.label}
                       </Badge>
@@ -289,12 +280,14 @@ export default function FreelancerDashboard() {
                       </span>
                     </div>
 
-                    <h4 className="font-bold text-sm text-slate-900">
+                    <h4 className="font-bold text-sm text-slate-900 break-words">
                       {ord.title}
                     </h4>
 
-                    <p className="text-xs text-slate-500">
-                      Cliente: <strong className="text-slate-700">{ord.client.fullName}</strong> · {ord.deliveryDays} días estimados
+                    <p className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span>Cliente: <strong className="text-slate-700">{ord.client.fullName}</strong></span>
+                      <span className="hidden sm:inline">·</span>
+                      <span>{ord.deliveryDays} días estimados</span>
                     </p>
 
                     <span className="text-xs font-bold text-primary block pt-0.5">
@@ -302,7 +295,7 @@ export default function FreelancerDashboard() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex-shrink-0">
                     {canActivate && (
                       <Link to={`/orders/${ord.id}`}>
                         <Button
@@ -339,6 +332,6 @@ export default function FreelancerDashboard() {
 
       {/* Historial de Desembolsos (Escrow Payouts) */}
       <PayoutHistory payouts={payouts} loading={loadingPayouts} />
-    </div>
+    </DashboardLayout>
   );
 }

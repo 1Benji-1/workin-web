@@ -4,6 +4,7 @@ import { useConversations } from "../../hooks/useConversations";
 import { useChat } from "../../hooks/useChat";
 import { ConversationList } from "./ConversationList";
 import { ChatWindow } from "./ChatWindow";
+import { DashboardLayout } from "../../shared/components/DashboardLayout";
 
 export default function MessagesPage() {
   const { id: routeConversationId } = useParams<{ id?: string }>();
@@ -42,8 +43,11 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-4rem)] p-2 sm:p-4 lg:p-6 flex flex-col">
-      <div className="flex-1 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex">
+    <DashboardLayout
+      title="Mensajes y Chat"
+      subtitle="Comunícate directamente con clientes y freelancers en tiempo real."
+    >
+      <div className="min-h-[500px] h-[calc(100vh-9rem)] sm:h-[calc(100vh-13rem)] bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-2xs flex">
         {/* Sidebar: Lista de Conversaciones */}
         <div
           className={`w-full md:w-80 lg:w-96 flex-shrink-0 h-full ${
@@ -75,6 +79,6 @@ export default function MessagesPage() {
           />
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

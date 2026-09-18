@@ -58,89 +58,89 @@ export function AdminDashboard() {
           </div>
         )}
 
-        {/* Tarjetas de Métricas Principales */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Escrow Held */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+        {/* Tarjetas de Métricas Principales - 4 Bloques de Color estilo diseno.png & paleta.png */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+          {/* Card 1: Escrow Held - #40798C */}
+          <div className="bg-[#40798C] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm relative overflow-hidden transition-transform hover:-translate-y-0.5 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Fondos en Escrow (Simulado)
+              <span className="text-[11px] sm:text-xs font-semibold text-white/90 uppercase tracking-wider truncate">
+                Fondos en Escrow
               </span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-white/15 text-white flex items-center justify-center text-base flex-shrink-0">
                 💰
               </div>
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-2">
+            <p className="text-2xl sm:text-3xl font-black text-white mt-3 truncate">
               {isLoading ? "..." : formatCurrency(metrics?.financials.escrow_held ?? 0)}
             </p>
-            <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500">
+            <div className="mt-2 flex items-center gap-1 text-[11px] text-white/80 font-medium truncate">
               <span>Liberado histórico:</span>
-              <span className="font-semibold text-slate-700">
+              <span className="font-bold text-[#CFE0C3]">
                 {formatCurrency(metrics?.financials.escrow_released ?? 0)}
               </span>
             </div>
           </div>
 
-          {/* Card 2: Platform Fees */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          {/* Card 2: Platform Fees - #70A9A1 */}
+          <div className="bg-[#70A9A1] text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm relative overflow-hidden transition-transform hover:-translate-y-0.5 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Comisiones de Plataforma (10%)
+              <span className="text-[11px] sm:text-xs font-semibold text-white/90 uppercase tracking-wider truncate">
+                Comisiones (12%)
               </span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-white/15 text-white flex items-center justify-center text-base flex-shrink-0">
                 📈
               </div>
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-2">
+            <p className="text-2xl sm:text-3xl font-black text-white mt-3 truncate">
               {isLoading ? "..." : formatCurrency(metrics?.financials.platform_fees ?? 0)}
             </p>
-            <div className="mt-2 text-[11px] text-emerald-600 font-semibold">
-              Ingresos brutos retenidos por WorkIn
+            <div className="mt-2 text-[11px] text-white/80 font-medium truncate">
+              Ingresos brutos plataforma WorkIn
             </div>
           </div>
 
-          {/* Card 3: Open Disputes */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          {/* Card 3: Open Disputes - #9EC1A3 */}
+          <div className="bg-[#9EC1A3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm relative overflow-hidden transition-transform hover:-translate-y-0.5 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-[11px] sm:text-xs font-bold text-[#1F363D]/90 uppercase tracking-wider truncate">
                 Disputas Abiertas
               </span>
-              <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-[#1F363D]/10 text-[#1F363D] flex items-center justify-center text-base flex-shrink-0">
                 ⚠️
               </div>
             </div>
-            <div className="flex items-baseline gap-2 mt-2">
-              <p className="text-2xl font-black text-slate-900">
+            <div className="flex items-baseline gap-2 mt-3">
+              <p className="text-2xl sm:text-3xl font-black text-[#1F363D]">
                 {isLoading ? "..." : metrics?.disputes.open ?? 0}
               </p>
               {(metrics?.disputes.open ?? 0) > 0 && (
-                <span className="text-[10px] bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-rose-600 text-white font-bold px-2 py-0.5 rounded-full">
                   Atención requerida
                 </span>
               )}
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
-              Casos resueltos: <span className="font-semibold">{metrics?.disputes.resolved ?? 0}</span>
+            <div className="mt-2 text-[11px] text-[#1F363D]/80 font-medium truncate">
+              Casos resueltos: <span className="font-bold">{metrics?.disputes.resolved ?? 0}</span>
             </div>
           </div>
 
-          {/* Card 4: Total Users */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          {/* Card 4: Total Users - #CFE0C3 */}
+          <div className="bg-[#CFE0C3] text-[#1F363D] p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm relative overflow-hidden transition-transform hover:-translate-y-0.5 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-[11px] sm:text-xs font-bold text-[#1F363D]/90 uppercase tracking-wider truncate">
                 Usuarios Registrados
               </span>
-              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-[#1F363D]/10 text-[#1F363D] flex items-center justify-center text-base flex-shrink-0">
                 👥
               </div>
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-2">
+            <p className="text-2xl sm:text-3xl font-black text-[#1F363D] mt-3">
               {isLoading ? "..." : metrics?.users.total ?? 0}
             </p>
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
-              <span>{metrics?.users.clients ?? 0} clientes</span>
+            <div className="mt-2 flex items-center gap-2 text-[11px] text-[#1F363D]/80 font-medium truncate">
+              <span>Clientes: {metrics?.users.clients ?? 0}</span>
               <span>•</span>
-              <span>{metrics?.users.freelancers ?? 0} freelancers</span>
+              <span>Freelancers: {metrics?.users.freelancers ?? 0}</span>
             </div>
           </div>
         </div>
