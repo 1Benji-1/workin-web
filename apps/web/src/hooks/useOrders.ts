@@ -12,7 +12,9 @@ interface RawOrderItem {
   package_id: string | null;
   title: string;
   description: string;
-  price: number | string;
+  price: number | null;
+  freelancer_price?: number | null;
+  commission_amount?: number | null;
   delivery_days: number;
   status: OrderWithDetails["status"];
   agreed_at: string | null;
@@ -85,7 +87,9 @@ export function useOrders(options: UseOrdersOptions = {}) {
           packageId: item.package_id,
           title: item.title,
           description: item.description,
-          price: Number(item.price),
+          price: item.price !== null && item.price !== undefined ? Number(item.price) : null,
+          freelancerPrice: item.freelancer_price !== null && item.freelancer_price !== undefined ? Number(item.freelancer_price) : null,
+          commissionAmount: item.commission_amount !== null && item.commission_amount !== undefined ? Number(item.commission_amount) : null,
           deliveryDays: item.delivery_days,
           status: item.status,
           agreedAt: item.agreed_at,

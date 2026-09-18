@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Card, Badge } from "@freelance/ui";
-import { calculateEscrowBreakdown } from "@freelance/core";
+import { calculateEscrowBreakdown, formatCurrency } from "@freelance/core";
 import type { DisputeDecision } from "@freelance/core";
 
 interface DisputeResolutionModalProps {
@@ -76,7 +76,7 @@ export const DisputeResolutionModal: React.FC<DisputeResolutionModalProps> = ({
               Emitir Veredicto de Resolución
             </h2>
             <p className="text-xs text-slate-500">
-              Monto total en disputa: <strong className="text-slate-800">${orderPrice.toFixed(2)} USD</strong>
+              Monto total en disputa: <strong className="text-slate-800">{formatCurrency(orderPrice)}</strong>
             </p>
           </div>
 
@@ -198,11 +198,11 @@ export const DisputeResolutionModal: React.FC<DisputeResolutionModalProps> = ({
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
                 <div className="bg-white p-2 rounded-lg border border-amber-200 text-center">
                   <span className="text-slate-400 block text-[10px]">Pago Freelancer ({percentage}%)</span>
-                  <span className="font-black text-emerald-600">${freelancerPayoutAmount} USD</span>
+                  <span className="font-black text-emerald-600">{formatCurrency(Number(freelancerPayoutAmount))}</span>
                 </div>
                 <div className="bg-white p-2 rounded-lg border border-amber-200 text-center">
                   <span className="text-slate-400 block text-[10px]">Reembolso Cliente ({100 - percentage}%)</span>
-                  <span className="font-black text-indigo-600">${clientRefundAmount} USD</span>
+                  <span className="font-black text-indigo-600">{formatCurrency(Number(clientRefundAmount))}</span>
                 </div>
               </div>
             </Card>

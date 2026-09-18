@@ -8,13 +8,16 @@ import { NotFoundPage } from "./features/errors/NotFoundPage";
 
 import HomePage from "./features/home/HomePage";
 import LoginPage from "./features/auth/LoginPage";
-import RegisterPage from "./features/auth/RegisterPage";
+import RoleSelectionPage from "./features/auth/RoleSelectionPage";
+import ClientRegisterForm from "./features/auth/ClientRegisterForm";
+import FreelancerRegisterForm from "./features/auth/FreelancerRegisterForm";
 import ForgotPasswordPage from "./features/auth/ForgotPasswordPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import CategoryPage from "./features/categories/CategoryPage";
 import ServiceDetail from "./features/services/ServiceDetail";
 import ServiceForm from "./features/services/ServiceForm";
 import FreelancerDashboard from "./features/freelancer-panel/FreelancerDashboard";
+import { ClientDashboard } from "./features/client-panel";
 import OrderRequestPage from "./features/orders/OrderRequestPage";
 import OrderDetailPage from "./features/orders/OrderDetailPage";
 import OrdersListPage from "./features/orders/OrdersListPage";
@@ -40,7 +43,9 @@ export default function App() {
             {/* Rutas Públicas */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register" element={<RoleSelectionPage />} />
+            <Route path="/register/cliente" element={<ClientRegisterForm />} />
+            <Route path="/register/freelancer" element={<FreelancerRegisterForm />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
             {/* Marketplace: Categorías y Detalle de Servicio */}
@@ -53,6 +58,24 @@ export default function App() {
               element={
                 <RoleGuard allowedRoles={["cliente", "freelancer", "admin", "soporte"]}>
                   <ProfilePage />
+                </RoleGuard>
+              }
+            />
+
+            {/* Dashboards por Rol */}
+            <Route
+              path="/client/dashboard"
+              element={
+                <RoleGuard allowedRoles={["cliente"]} redirectTo="/">
+                  <ClientDashboard />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/freelancer/dashboard"
+              element={
+                <RoleGuard allowedRoles={["freelancer"]} redirectTo="/">
+                  <FreelancerDashboard />
                 </RoleGuard>
               }
             />
@@ -71,14 +94,6 @@ export default function App() {
               element={
                 <RoleGuard allowedRoles={["freelancer"]} redirectTo="/">
                   <ServiceForm />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/freelancer/dashboard"
-              element={
-                <RoleGuard allowedRoles={["freelancer"]} redirectTo="/">
-                  <FreelancerDashboard />
                 </RoleGuard>
               }
             />

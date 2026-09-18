@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Card, Badge, Button } from "@freelance/ui";
+import { formatCurrency } from "@freelance/core";
 
 export default function FreelancerDashboardDemo() {
   const { profile } = useAuth();
@@ -46,7 +47,7 @@ export default function FreelancerDashboardDemo() {
         <Card className="p-4 bg-slate-50">
           <span className="text-xs text-slate-500 font-medium">Tarifa por Hora</span>
           <p className="text-base font-bold text-accent mt-1">
-            {profile?.hourlyRate ? `$${profile.hourlyRate} USD/h` : "No configurada"}
+            {profile?.hourlyRate ? `${formatCurrency(profile.hourlyRate)}/h` : "No configurada"}
           </p>
         </Card>
 

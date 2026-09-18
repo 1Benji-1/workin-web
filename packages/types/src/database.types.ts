@@ -257,7 +257,9 @@ export type Database = {
           package_id: string | null
           title: string
           description: string
-          price: number
+          price: number | null
+          freelancer_price: number | null
+          commission_amount: number | null
           delivery_days: number
           status: string
           agreed_at: string | null
@@ -276,7 +278,9 @@ export type Database = {
           package_id?: string | null
           title: string
           description: string
-          price: number
+          price?: number | null
+          freelancer_price?: number | null
+          commission_amount?: number | null
           delivery_days: number
           status?: string
           agreed_at?: string | null
@@ -295,7 +299,9 @@ export type Database = {
           package_id?: string | null
           title?: string
           description?: string
-          price?: number
+          price?: number | null
+          freelancer_price?: number | null
+          commission_amount?: number | null
           delivery_days?: number
           status?: string
           agreed_at?: string | null
@@ -983,6 +989,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_order_payment: {
+        Args: {
+          p_order_id: string
+          p_freelancer_price: number
+        }
+        Returns: Database["public"]["Tables"]["orders"]["Row"]
+      }
       process_simulated_escrow_payment: {
         Args: {
           p_order_id: string

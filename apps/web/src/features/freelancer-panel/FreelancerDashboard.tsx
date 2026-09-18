@@ -4,12 +4,11 @@ import { useAuth } from "../../shared/context/AuthContext";
 import {
   getServicesByFreelancer,
   updateService,
-  activateOrderPayment,
   getPayoutsByFreelancer,
 } from "@freelance/api";
 import type { PayoutWithOrder } from "@freelance/api";
 import { useOrders } from "../../hooks/useOrders";
-import { getOrderStatusMeta, canFreelancerActivatePayment } from "@freelance/core";
+import { getOrderStatusMeta, canFreelancerActivatePayment, formatCurrency } from "@freelance/core";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { Card, Button, Badge } from "@freelance/ui";
 import { PayoutHistory } from "../payments";
@@ -23,6 +22,7 @@ interface FreelancerServiceItem {
   delivery_days: number;
   status: string;
   rating: number;
+  reviews_count: number;
   category?: {
     name: string;
     icon: string | null;
@@ -31,67 +31,51 @@ interface FreelancerServiceItem {
 
 export default function FreelancerDashboard() {
   const { user, profile } = useAuth();
-  const { orders: myOrders, loading: loadingOrders, refetch: refetchOrders } = useOrders({
-    roleFilter: "as_freelancer",
-  });
+  const { orders: myOrders, loading: loadingOrders } = useOrders({ roleFilter: "as_freelancer" });
 
   const [myServices, setMyServices] = useState<FreelancerServiceItem[]>([]);
   const [payouts, setPayouts] = useState<PayoutWithOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingServices, setLoadingServices] = useState(true);
   const [loadingPayouts, setLoadingPayouts] = useState(true);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
-  const [activatingOrderId, setActivatingOrderId] = useState<string | null>(null);
 
-  const loadMyServices = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
-    try {
-      const { data } = await getServicesByFreelancer(supabase, user.id);
-      setMyServices((data as unknown as FreelancerServiceItem[]) || []);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const loadMyPayouts = useCallback(async () => {
-    if (!user) return;
+    setLoadingServices(true);
     setLoadingPayouts(true);
     try {
-      const { data } = await getPayoutsByFreelancer(supabase, user.id);
-      setPayouts(data || []);
+      const [{ data: srvs }, { data: pos }] = await Promise.all([
+        getServicesByFreelancer(supabase, user.id),
+        getPayoutsByFreelancer(supabase, user.id),
+      ]);
+
+      if (srvs) setMyServices(srvs as unknown as FreelancerServiceItem[]);
+      if (pos) setPayouts(pos);
     } finally {
+      setLoadingServices(false);
       setLoadingPayouts(false);
     }
   }, [user]);
 
   useEffect(() => {
-    loadMyServices();
-    loadMyPayouts();
-  }, [loadMyServices, loadMyPayouts]);
+    loadData();
+  }, [loadData]);
 
   const handleToggleServiceStatus = async (serviceId: string, currentStatus: string) => {
     setStatusUpdatingId(serviceId);
-    const nextStatus = currentStatus === "active" ? "paused" : "active";
-    await updateService(supabase, serviceId, { status: nextStatus });
-    await loadMyServices();
-    setStatusUpdatingId(null);
-  };
-
-  const handleQuickActivatePayment = async (orderId: string) => {
-    if (!user) return;
-    setActivatingOrderId(orderId);
     try {
-      await activateOrderPayment(supabase, orderId, user.id);
-      await refetchOrders();
+      const newStatus = currentStatus === "active" ? "paused" : "active";
+      await updateService(supabase, serviceId, { status: newStatus });
+      await loadData();
     } finally {
-      setActivatingOrderId(null);
+      setStatusUpdatingId(null);
     }
   };
 
   // Fondos actualmente retenidos en Escrow (monto neto garantizado al freelancer para órdenes en progreso)
   const escrowHeld = myOrders
     .filter((o) => o.status === "en_progreso")
-    .reduce((acc, o) => acc + o.price * 0.9, 0);
+    .reduce((acc, o) => acc + (o.freelancerPrice ?? (o.price ? o.price / 1.12 : 0)), 0);
 
   // Ganancias netas liberadas (obtenidas del historial real de payouts)
   const releasedEarnings = payouts
@@ -139,8 +123,7 @@ export default function FreelancerDashboard() {
             <span>🛡️</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-primary">${escrowHeld.toFixed(2)}</span>
-            <span className="text-xs text-slate-400">USD</span>
+            <span className="text-2xl font-black text-primary">{formatCurrency(escrowHeld)}</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
             Retenidos en órdenes en curso.
@@ -153,8 +136,7 @@ export default function FreelancerDashboard() {
             <span>💵</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">${releasedEarnings.toFixed(2)}</span>
-            <span className="text-xs text-slate-400">USD</span>
+            <span className="text-2xl font-black text-emerald-600">{formatCurrency(releasedEarnings)}</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
             Liberadas tras entrega conforme.
@@ -197,7 +179,7 @@ export default function FreelancerDashboard() {
         title="Mis Servicios Publicados"
         description="Ofertas activas en el marketplace que pueden ser contratadas por clientes"
       >
-        {loading ? (
+        {loadingServices ? (
           <div className="py-8 text-center text-xs text-slate-400">
             Cargando tus servicios...
           </div>
@@ -228,7 +210,7 @@ export default function FreelancerDashboard() {
                       {srv.category?.name} · Entrega en {srv.delivery_days} días · ⭐ {Number(srv.rating).toFixed(1)}
                     </p>
                     <span className="text-xs font-bold text-primary inline-block mt-1">
-                      ${srv.price} USD
+                      Desde {formatCurrency(srv.price)}
                     </span>
                   </div>
                 </div>
@@ -316,20 +298,20 @@ export default function FreelancerDashboard() {
                     </p>
 
                     <span className="text-xs font-bold text-primary block pt-0.5">
-                      ${ord.price} USD
+                      {ord.price !== null ? formatCurrency(ord.price) : "Precio pendiente de acuerdo"}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {canActivate && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleQuickActivatePayment(ord.id)}
-                        disabled={activatingOrderId === ord.id}
-                        className="bg-accent text-primary hover:bg-accent/90 text-xs font-bold"
-                      >
-                        {activatingOrderId === ord.id ? "Activando..." : "⚡ Activar Pago"}
-                      </Button>
+                      <Link to={`/orders/${ord.id}`}>
+                        <Button
+                          size="sm"
+                          className="bg-accent text-primary hover:bg-accent/90 text-xs font-bold whitespace-nowrap"
+                        >
+                          💰 Fijar Precio
+                        </Button>
+                      </Link>
                     )}
 
                     <Link to={`/orders/${ord.id}`}>

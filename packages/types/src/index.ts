@@ -133,7 +133,9 @@ export interface Order {
   packageId: string | null;
   title: string;
   description: string;
-  price: number;
+  price: number | null;
+  freelancerPrice?: number | null;
+  commissionAmount?: number | null;
   deliveryDays: number;
   status: OrderStatus;
   agreedAt: string | null;
@@ -180,7 +182,7 @@ export interface CreateOrderPayload {
   packageId?: string;
   title: string;
   description: string;
-  price: number;
+  price?: number | null;
   deliveryDays: number;
   requirements?: string[];
 }

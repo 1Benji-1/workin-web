@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Message, ConversationWithDetails, MessageAttachment } from "@freelance/types";
-import { formatMessageDate } from "@freelance/core";
+import { formatMessageDate, formatCurrency } from "@freelance/core";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Button } from "@freelance/ui";
 
@@ -133,7 +133,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               📋 {conversation.order.title}
             </span>
             <span className="text-[10px] font-bold text-primary bg-white px-1.5 py-0.5 rounded border border-slate-200">
-              ${conversation.order.price} USD
+              {conversation.order.price !== null ? formatCurrency(conversation.order.price) : "Por acordar"}
             </span>
           </Link>
         )}

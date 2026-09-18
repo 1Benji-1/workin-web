@@ -13,20 +13,28 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/profile";
+  const locationStateFrom = (location.state as { from?: { pathname?: string } })?.from?.pathname;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSubmitting(true);
 
-    const { error } = await login(email, password);
+    const { error, roles: userRoles } = await login(email, password);
     setSubmitting(false);
 
     if (error) {
       setErrorMsg(error);
     } else {
-      navigate(from, { replace: true });
+      if (locationStateFrom) {
+        navigate(locationStateFrom, { replace: true });
+      } else if (userRoles?.includes("freelancer")) {
+        navigate("/freelancer/dashboard", { replace: true });
+      } else if (userRoles?.includes("cliente")) {
+        navigate("/client/dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   };
 

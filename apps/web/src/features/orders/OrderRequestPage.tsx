@@ -1,18 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../shared/context/AuthContext";
 import { getServiceById, createOrder } from "@freelance/api";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { Button, Input, Card, Badge } from "@freelance/ui";
-
-interface RequestedServicePackage {
-  id: string;
-  tier: string;
-  title: string;
-  description: string;
-  price: number;
-  delivery_days: number;
-}
+import { formatCurrency } from "@freelance/core";
 
 interface RequestedService {
   id: string;
@@ -28,14 +20,10 @@ interface RequestedService {
     name: string;
     icon: string | null;
   } | null;
-  packages?: RequestedServicePackage[];
 }
 
 export default function OrderRequestPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
-  const [searchParams] = useSearchParams();
-  const requestedTier = searchParams.get("tier") || "estandar";
-
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -47,9 +35,7 @@ export default function OrderRequestPage() {
   // Form Fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
   const [deliveryDays, setDeliveryDays] = useState("3");
-  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [requirementsList, setRequirementsList] = useState<string[]>([
     "Entrega de archivos fuente editables",
     "Revisión y ajustes según especificaciones",
@@ -68,19 +54,8 @@ export default function OrderRequestPage() {
           const srv = data as unknown as RequestedService;
           setService(srv);
           setTitle(`Solicitud: ${srv.title}`);
-
-          // Buscar paquete si aplica
-          const pkg = (srv.packages || []).find((p) => p.tier === requestedTier);
-          if (pkg) {
-            setSelectedPackageId(pkg.id);
-            setPrice(String(pkg.price));
-            setDeliveryDays(String(pkg.delivery_days));
-            setDescription(`Contratación del paquete ${pkg.title} (${pkg.tier.toUpperCase()}).\nAlcance: ${pkg.description}`);
-          } else {
-            setPrice(String(data.price));
-            setDeliveryDays(String(data.delivery_days));
-            setDescription(`Solicitud para el servicio: ${data.title}.\nDetalles del requerimiento: `);
-          }
+          setDeliveryDays(String(srv.delivery_days || 3));
+          setDescription(`Solicitud para el servicio: ${srv.title}.\nDetalles del requerimiento: `);
         }
       } catch (err: unknown) {
         setErrorMsg(err instanceof Error ? err.message : "Error al cargar servicio");
@@ -90,7 +65,7 @@ export default function OrderRequestPage() {
     }
 
     loadService();
-  }, [serviceId, requestedTier]);
+  }, [serviceId]);
 
   const handleAddRequirement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,10 +95,8 @@ export default function OrderRequestPage() {
         clientId: user.id,
         freelancerId: service.freelancer_id,
         serviceId: service.id,
-        packageId: selectedPackageId || undefined,
         title,
         description,
-        price: parseFloat(price),
         deliveryDays: parseInt(deliveryDays, 10),
         requirements: requirementsList,
       });
@@ -181,7 +154,7 @@ export default function OrderRequestPage() {
           Solicitar Servicio Profesional
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Define el alcance, precio y requerimientos. El pago no se realiza ahora; el profesional revisará y activará el pago una vez ambos estén conformes.
+          Define el alcance y requerimientos. El pago no se realiza ahora; el precio final se coordina mediante el chat y el profesional activará el pago una vez que ambos estén conformes.
         </p>
       </div>
 
@@ -205,9 +178,9 @@ export default function OrderRequestPage() {
           </div>
         </div>
 
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs text-slate-400">Total a acordar:</span>
-          <span className="text-xl font-black text-primary">${price} USD</span>
+        <div className="flex flex-col sm:items-end">
+          <span className="text-xs text-slate-400 font-medium">Precio orientativo:</span>
+          <span className="text-xl font-black text-primary">Desde {formatCurrency(service.price)}</span>
         </div>
       </div>
 
@@ -239,19 +212,8 @@ export default function OrderRequestPage() {
           </div>
         </Card>
 
-        <Card title="Condiciones Económicas y Plazos">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Input
-              label="Presupuesto Acordado (USD)"
-              type="number"
-              min="5"
-              step="1"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-              helperText="Monto total que quedará en custodia en Escrow una vez acordado."
-            />
-
+        <Card title="Tiempo de Entrega Estimado">
+          <div className="space-y-3">
             <Input
               label="Tiempo de Entrega Estimado (Días)"
               type="number"
@@ -262,6 +224,12 @@ export default function OrderRequestPage() {
               required
               helperText="Días calendario estimados para la entrega final."
             />
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+              <span className="text-sm">💡</span>
+              <p>
+                <strong>Nota sobre el precio:</strong> La solicitud se crea sin monto prefijado. Podrás afinar los detalles por el chat del proyecto y el freelancer definirá el precio final convenido antes de activar el pago en custodia (Escrow).
+              </p>
+            </div>
           </div>
         </Card>
 

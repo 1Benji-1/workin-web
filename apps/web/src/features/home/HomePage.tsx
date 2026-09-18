@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button, Badge } from "@freelance/ui";
-import { calculatePlatformFee } from "@freelance/core";
+import { calculatePlatformFee, formatCurrency } from "@freelance/core";
 import { useAuth } from "../../shared/context/AuthContext";
 import { useCategories } from "../../hooks/useCategories";
 import { useServices } from "../../hooks/useServices";
@@ -138,7 +138,7 @@ export default function HomePage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Link to="/register">
+                  <Link to="/register/freelancer">
                     <Button size="sm">
                       Registrarme para trabajar
                     </Button>
@@ -262,7 +262,7 @@ export default function HomePage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Link to="/register">
+                  <Link to="/register/freelancer">
                     <Button size="sm">
                       Registrarme como Freelancer
                     </Button>
@@ -328,7 +328,7 @@ export default function HomePage() {
             <span>WorkIn Monorepo · Fase 0, 1 y 2 Integradas</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Comisión @freelance/core calculada: <strong className="font-mono text-slate-800">${sampleFee} USD</strong></span>
+            <span>Comisión @freelance/core calculada: <strong className="font-mono text-slate-800">{formatCurrency(sampleFee)}</strong></span>
             <span>Stack: React + Tailwind + Supabase RLS</span>
           </div>
         </div>

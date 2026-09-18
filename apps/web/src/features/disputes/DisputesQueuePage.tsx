@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { getDisputesQueue } from "@freelance/api";
 import type { DisputeQueueItem } from "@freelance/api";
-import { getDisputeStatusMeta, getDisputeReasonLabel } from "@freelance/core";
+import { getDisputeStatusMeta, getDisputeReasonLabel, formatCurrency } from "@freelance/core";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { Card, Button, Badge } from "@freelance/ui";
 
@@ -159,7 +159,7 @@ export default function DisputesQueuePage() {
                       {disp.orderPrice && (
                         <>
                           <span>·</span>
-                          <span>Monto en riesgo: <strong className="text-primary">${disp.orderPrice.toFixed(2)} USD</strong></span>
+                          <span>Monto en riesgo: <strong className="text-primary">{formatCurrency(disp.orderPrice)}</strong></span>
                         </>
                       )}
                     </div>

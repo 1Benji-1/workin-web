@@ -17,9 +17,10 @@ import {
   canClientApprove,
   canOpenDispute,
   canLeaveReview,
-  calculatePlatformFee,
+  formatCurrency,
 } from "@freelance/core";
 import { Card, Button, Badge } from "@freelance/ui";
+import { SetFinalPricePanel } from "./SetFinalPricePanel";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,13 +92,10 @@ export default function OrderDetailPage() {
   const canDispute = user ? canOpenDispute(order.status, order.clientId, order.freelancerId, user.id) : false;
   const canReview = user ? canLeaveReview(order.status, order.clientId, user.id, Boolean(orderReview)) : false;
 
-  const platformFee = calculatePlatformFee(order.price);
-  const netEarnings = (order.price - platformFee).toFixed(2);
-
-  const handleActivatePayment = async () => {
-    const res = await activatePayment();
+  const handleActivatePayment = async (freelancerPrice: number) => {
+    const res = await activatePayment(freelancerPrice);
     if (res.success) {
-      setActionSuccessMsg("¡Pago activado con éxito! La orden está ahora en estado esperando_pago.");
+      setActionSuccessMsg("¡Precio final definido y orden activada para pago con éxito!");
       setTimeout(() => setActionSuccessMsg(null), 5000);
     }
   };
@@ -216,36 +214,20 @@ export default function OrderDetailPage() {
       {/* Línea de Vida del Acuerdo */}
       <OrderStatusTimeline status={order.status} />
 
-      {/* Barra de Acción Clave (Activar Pago / Entregar / Aprobar) */}
+      {/* Barra de Acción Clave (Definir precio final / Entregar / Aprobar) */}
       {canActivate && (
-        <div className="rounded-2xl border-2 border-accent/40 bg-accent/5 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
-          <div className="space-y-1 max-w-xl">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-accent uppercase tracking-wider">
-              ⚡ Acción requerida de tu parte
-            </span>
-            <h3 className="font-bold text-slate-900 text-base">
-              ¿Estás de acuerdo con el alcance y el precio?
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Al hacer clic en <strong>"Activar Pago"</strong> confirmas que puedes realizar este trabajo bajo los términos establecidos. Esto habilitará la orden para que el cliente deposite los <strong>${order.price} USD</strong> en custodia segura (Escrow).
-            </p>
-          </div>
-
-          <Button
-            size="lg"
-            onClick={handleActivatePayment}
-            disabled={actionLoading}
-            className="shadow-md whitespace-nowrap bg-accent text-primary hover:bg-accent/90"
-          >
-            {actionLoading ? "Activando..." : "⚡ Activar Pago"}
-          </Button>
-        </div>
+        <SetFinalPricePanel
+          onConfirm={handleActivatePayment}
+          loading={actionLoading}
+        />
       )}
 
       {/* Estado y Acciones de Custodia de Fondos (Escrow) */}
       <EscrowStatusBadge
         orderStatus={order.status}
         orderPrice={order.price}
+        freelancerPrice={order.freelancerPrice}
+        commissionAmount={order.commissionAmount}
         escrowHold={order.escrowHold}
         isClient={isClient}
         onOpenPaymentModal={() => setShowPaymentModal(true)}
@@ -256,7 +238,7 @@ export default function OrderDetailPage() {
         <DisputeThread
           dispute={dispute}
           currentUserId={user?.id}
-          orderPrice={order.price}
+          orderPrice={order.price || 0}
           userRoles={roles}
           onSendMessage={postMessage}
           onResolveDispute={handleResolveDispute}
@@ -287,7 +269,7 @@ export default function OrderDetailPage() {
               ✨ Revisión de Entrega y Liberación de Fondos
             </span>
             <p className="text-xs text-emerald-900 leading-relaxed">
-              El freelancer ha completado el trabajo. Al aprobar la entrega, se transferirán los fondos en custodia (${(order.escrowHold?.netAmount ?? (order.price * 0.9)).toFixed(2)} USD) de forma definitiva al profesional.
+              El freelancer ha completado el trabajo. Al aprobar la entrega, se transferirán los fondos netos acordados ({formatCurrency(order.escrowHold?.netAmount ?? order.freelancerPrice ?? (order.price ? order.price / 1.12 : 0))}) de forma definitiva al profesional.
             </p>
           </div>
 
@@ -299,7 +281,7 @@ export default function OrderDetailPage() {
           >
             {actionLoading
               ? "Liberando Fondos..."
-              : `✅ Aprobar y Liberar $${(order.escrowHold?.netAmount ?? (order.price * 0.9)).toFixed(2)} USD`}
+              : `✅ Aprobar y Liberar ${formatCurrency(order.escrowHold?.netAmount ?? order.freelancerPrice ?? (order.price ? order.price / 1.12 : 0))}`}
           </Button>
         </div>
       )}
@@ -435,24 +417,47 @@ export default function OrderDetailPage() {
           {/* Ficha Económica */}
           <Card title="Condiciones del Acuerdo">
             <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <span className="text-slate-500">Precio Acordado:</span>
-                <span className="text-base font-black text-primary">${order.price} USD</span>
-              </div>
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              {order.price === null ? (
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-amber-900 space-y-1">
+                  <p className="font-semibold">Precio pendiente de acuerdo</p>
+                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                    Coordina los requerimientos por el chat. El freelancer definirá el precio final acordado para activar la orden para pago en Escrow.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-slate-500">Tu precio (freelancer):</span>
+                    <span className="font-bold text-slate-800">
+                      {formatCurrency(order.freelancerPrice ?? (order.price / 1.12))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-slate-500">Comisión plataforma (12%):</span>
+                    <span className="font-mono text-slate-600">
+                      {formatCurrency(order.commissionAmount ?? (order.price - (order.price / 1.12)))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-slate-600 font-medium">Total pagado por cliente:</span>
+                    <span className="text-base font-black text-primary">
+                      {formatCurrency(order.price)}
+                    </span>
+                  </div>
+                  {isFreelancer && (
+                    <div className="flex items-center justify-between pt-1 font-semibold text-emerald-700">
+                      <span>Tus Ganancias (100%):</span>
+                      <span className="text-sm font-bold">
+                        {formatCurrency(order.freelancerPrice ?? (order.price / 1.12))}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                 <span className="text-slate-500">Tiempo de Entrega:</span>
                 <span className="font-bold text-slate-800">{order.deliveryDays} días</span>
               </div>
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <span className="text-slate-500">Comisión Plataforma (10%):</span>
-                <span className="font-mono text-slate-600">${platformFee} USD</span>
-              </div>
-              {isFreelancer && (
-                <div className="flex items-center justify-between pt-1 font-semibold text-emerald-700">
-                  <span>Tus Ganancias Estimadas:</span>
-                  <span className="text-sm font-bold">${netEarnings} USD</span>
-                </div>
-              )}
             </div>
           </Card>
 

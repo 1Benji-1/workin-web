@@ -119,13 +119,13 @@ export function ProfileForm({
                 </div>
                 <div>
                   <Input
-                    label="Tarifa por hora (USD)"
+                    label="Tarifa por hora (Bs)"
                     type="number"
-                    step="0.5"
+                    step="1"
                     min="0"
                     value={data.hourlyRate}
                     onChange={(e) => onChange({ hourlyRate: e.target.value })}
-                    placeholder="Ej: 25.00"
+                    placeholder="Ej: 150.00"
                   />
                 </div>
               </div>

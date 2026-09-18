@@ -6,16 +6,7 @@ import { useAuth } from "../../shared/context/AuthContext";
 import { useReviews } from "../../hooks/useReviews";
 import { RatingStars, RatingSummaryCard, ReviewsList } from "../reviews";
 import { Badge, Button, Card } from "@freelance/ui";
-
-interface ServicePackageData {
-  id: string;
-  tier: string;
-  title: string;
-  description: string;
-  price: number;
-  delivery_days: number;
-  revisions: number;
-}
+import { formatCurrency } from "@freelance/core";
 
 interface ServiceDetailData {
   id: string;
@@ -41,7 +32,6 @@ interface ServiceDetailData {
     slug: string;
     icon: string | null;
   } | null;
-  packages?: ServicePackageData[];
 }
 
 export default function ServiceDetail() {
@@ -52,7 +42,6 @@ export default function ServiceDetail() {
   const [service, setService] = useState<ServiceDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<string>("estandar");
 
   const {
     reviews,
@@ -73,10 +62,6 @@ export default function ServiceDetail() {
         } else if (data) {
           const detailData = data as unknown as ServiceDetailData;
           setService(detailData);
-          // Si tiene paquetes, seleccionar el primero disponible
-          if (detailData.packages && detailData.packages.length > 0) {
-            setSelectedTier(detailData.packages[0].tier);
-          }
         }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Error al cargar servicio");
@@ -109,21 +94,12 @@ export default function ServiceDetail() {
     );
   }
 
-  const packages: ServicePackageData[] = service.packages || [];
-  const currentPackage = packages.find((p) => p.tier === selectedTier) || {
-    price: service.price,
-    delivery_days: service.delivery_days,
-    revisions: 1,
-    title: "Servicio Estándar",
-    description: "Entrega completa del servicio con todas las especificaciones acordadas.",
-  };
-
   const handleRequestService = () => {
     if (!user) {
       navigate("/login");
       return;
     }
-    navigate(`/services/${service.id}/order?tier=${selectedTier}`);
+    navigate(`/services/${service.id}/order`);
   };
 
   const handleContactFreelancer = async () => {
@@ -302,56 +278,30 @@ export default function ServiceDetail() {
           </div>
         </div>
 
-        {/* Columna Derecha: Paquetes y Contratación */}
+        {/* Columna Derecha: Contratación y Condiciones */}
         <div className="space-y-6">
           <Card className="sticky top-20 shadow-md border-slate-200">
-            {/* Tabs de Paquetes si existen */}
-            {packages.length > 0 ? (
-              <div className="grid grid-cols-3 border-b border-slate-200 mb-4 text-center">
-                {packages.map((pkg) => (
-                  <button
-                    key={pkg.tier}
-                    type="button"
-                    onClick={() => setSelectedTier(pkg.tier)}
-                    className={`py-2 text-xs font-bold uppercase transition-colors border-b-2 ${
-                      selectedTier === pkg.tier
-                        ? "border-primary text-primary"
-                        : "border-transparent text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    {pkg.tier}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            {/* Precio & Detalles del paquete */}
             <div className="space-y-4">
-              <div className="flex items-baseline justify-between">
-                <span className="text-xs uppercase font-semibold text-slate-500">
-                  {packages.length > 0 ? `Paquete ${selectedTier}` : "Precio del servicio"}
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider mb-1">
+                  Precio orientativo
                 </span>
-                <span className="text-3xl font-extrabold text-primary">
-                  ${currentPackage.price}{" "}
-                  <span className="text-xs font-normal text-slate-500">USD</span>
+                <span className="text-3xl font-black text-primary">
+                  Desde {formatCurrency(service.price)}
                 </span>
+                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                  Es una tarifa de referencia. El precio final y el alcance se definen con el freelancer a través del chat antes de activar el pago.
+                </p>
               </div>
 
-              <h4 className="font-semibold text-sm text-slate-800">
-                {currentPackage.title}
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {currentPackage.description}
-              </p>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs text-slate-600 font-medium">
-                <div className="flex items-center gap-1.5">
+              <div className="pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-2">
+                <div className="flex items-center gap-2">
                   <span>⏱️</span>
-                  <span>{currentPackage.delivery_days} días de entrega</span>
+                  <span>Tiempo de entrega estimado: <strong>{service.delivery_days} {service.delivery_days === 1 ? "día" : "días"}</strong></span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span>🔄</span>
-                  <span>{currentPackage.revisions} {currentPackage.revisions === 1 ? "revisión" : "revisiones"}</span>
+                <div className="flex items-center gap-2">
+                  <span>💬</span>
+                  <span>Alcance acordado mediante chat</span>
                 </div>
               </div>
 
@@ -359,9 +309,9 @@ export default function ServiceDetail() {
               <Button
                 onClick={handleRequestService}
                 size="lg"
-                className="w-full font-bold shadow-md"
+                className="w-full font-bold shadow-md text-sm"
               >
-                Solicitar Servicio (${currentPackage.price} USD)
+                Solicitar Servicio
               </Button>
 
               {/* Garantía Escrow */}
@@ -371,7 +321,7 @@ export default function ServiceDetail() {
                   <span>Garantía de Pago Seguro (Escrow)</span>
                 </div>
                 <p className="text-[11px] text-slate-500 leading-tight">
-                  Tu dinero queda retenido y seguro por la plataforma. Solo se libera al freelancer cuando confirmes la entrega conforme de tu trabajo.
+                  Tu dinero queda protegido en la plataforma. Solo se libera al freelancer cuando confirmes la entrega conforme de tu trabajo.
                 </p>
               </div>
             </div>

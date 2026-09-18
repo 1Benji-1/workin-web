@@ -9,7 +9,7 @@ export async function createOrder(
   supabase: SupabaseClient<Database>,
   payload: CreateOrderPayload
 ) {
-  // 1. Insertar orden en tabla orders
+  // 1. Insertar orden en tabla orders (nace sin precio; lo define el freelancer al activar pago)
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
@@ -19,7 +19,6 @@ export async function createOrder(
       package_id: payload.packageId || null,
       title: payload.title,
       description: payload.description,
-      price: payload.price,
       delivery_days: payload.deliveryDays,
       status: "pendiente_acuerdo",
     })
@@ -114,35 +113,12 @@ export async function getOrderById(
 export async function activateOrderPayment(
   supabase: SupabaseClient<Database>,
   orderId: string,
-  freelancerId: string
+  freelancerPrice: number
 ) {
-  const now = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("orders")
-    .update({
-      status: "esperando_pago",
-      payment_activated_at: now,
-      agreed_at: now,
-    })
-    .eq("id", orderId)
-    .eq("freelancer_id", freelancerId)
-    .select()
-    .single();
-
-  if (error || !data) {
-    return { data: null, error };
-  }
-
-  await supabase.from("order_status_history").insert({
-    order_id: orderId,
-    previous_status: "pendiente_acuerdo",
-    new_status: "esperando_pago",
-    changed_by: freelancerId,
-    comment: "El freelancer revisó los requerimientos y activó la orden para pago",
+  return supabase.rpc("activate_order_payment", {
+    p_order_id: orderId,
+    p_freelancer_price: freelancerPrice,
   });
-
-  return { data, error: null };
 }
 
 export async function markOrderDelivered(

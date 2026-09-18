@@ -19,14 +19,15 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   roles: Role[];
+  primaryRole: Role | null;
   isLoading: boolean;
   hasRole: (role: Role) => boolean;
-  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  login: (email: string, password: string) => Promise<{ error: string | null; roles?: Role[] }>;
   register: (
     email: string,
     password: string,
     fullName: string,
-    initialRoles: Role[]
+    role?: Role
   ) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
@@ -121,25 +122,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [roles]
   );
 
+  const primaryRole: Role | null = roles.includes("freelancer")
+    ? "freelancer"
+    : roles.includes("cliente")
+    ? "cliente"
+    : null;
+
+  const setSingleRoleForUser = async (userId: string, targetRole: Role) => {
+    const { data: existingRoles } = await getUserRoles(supabase, userId);
+    const rolesToDeactivate = (existingRoles || []).filter(
+      (r) => r.role !== targetRole && (r.role === "cliente" || r.role === "freelancer") && r.active
+    );
+    for (const r of rolesToDeactivate) {
+      await setUserRoleActive(supabase, userId, r.role as Role, false);
+    }
+
+    const exists = existingRoles?.some((r) => r.role === targetRole);
+    if (exists) {
+      await setUserRoleActive(supabase, userId, targetRole, true);
+    } else {
+      await addUserRole(supabase, userId, targetRole);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     const { data, error } = await signInWithPassword(supabase, { email, password });
     if (error) {
       setIsLoading(false);
-      return { error: error.message };
+      return { error: error.message, roles: [] };
     }
+    let userRoles: Role[] = [];
     if (data.user) {
       await fetchUserData(data.user.id);
+      const { data: roleRows } = await getUserRoles(supabase, data.user.id);
+      userRoles = (roleRows || []).filter((r) => r.active).map((r) => r.role as Role);
     }
     setIsLoading(false);
-    return { error: null };
+    return { error: null, roles: userRoles };
   };
 
   const register = async (
     email: string,
     password: string,
     fullName: string,
-    initialRoles: Role[]
+    role: Role = "cliente"
   ) => {
     setIsLoading(true);
     const { data, error } = await signUpWithPassword(supabase, {
@@ -154,12 +181,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
-      // Si el usuario seleccionó "freelancer", lo insertamos en user_roles
-      if (initialRoles.includes("freelancer")) {
+      // El trigger inserta automáticamente 'cliente' activo.
+      // Si el rol elegido es 'freelancer', desactivamos 'cliente' y activamos/creamos 'freelancer'.
+      if (role === "freelancer") {
         try {
-          await addUserRole(supabase, data.user.id, "freelancer");
-        } catch {
-          // Ignorar error si ya fue creado por trigger o política
+          await setSingleRoleForUser(data.user.id, "freelancer");
+        } catch (roleErr) {
+          console.error("Error asignando rol freelancer en registro:", roleErr);
         }
       }
       await fetchUserData(data.user.id);
@@ -207,22 +235,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleRole = async (role: Role, activate: boolean) => {
-    if (!user) return { error: "No hay sesión activa" };
+    const currentUserId = user?.id;
+    if (!currentUserId) return { error: "No hay sesión activa" };
 
     try {
-      // Verificar si ya tiene el rol en la tabla
-      const { data: existingRoles } = await getUserRoles(supabase, user.id);
-      const exists = existingRoles?.some((r) => r.role === role);
-
-      if (exists) {
-        const { error } = await setUserRoleActive(supabase, user.id, role, activate);
-        if (error) return { error: error.message };
-      } else if (activate) {
-        const { error } = await addUserRole(supabase, user.id, role);
-        if (error) return { error: error.message };
+      if (activate) {
+        await setSingleRoleForUser(currentUserId, role);
+      } else {
+        await setUserRoleActive(supabase, currentUserId, role, false);
+        // Garantizar que siempre quede un rol activo (por defecto el alternativo)
+        const fallbackRole: Role = role === "freelancer" ? "cliente" : "freelancer";
+        const { data: currentRoles } = await getUserRoles(supabase, currentUserId);
+        const hasOtherActive = currentRoles?.some(
+          (r) => (r.role === "cliente" || r.role === "freelancer") && r.active && r.role !== role
+        );
+        if (!hasOtherActive) {
+          const fallbackExists = currentRoles?.some((r) => r.role === fallbackRole);
+          if (fallbackExists) {
+            await setUserRoleActive(supabase, currentUserId, fallbackRole, true);
+          } else {
+            await addUserRole(supabase, currentUserId, fallbackRole);
+          }
+        }
       }
 
-      await fetchUserData(user.id);
+      await fetchUserData(currentUserId);
       return { error: null };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al actualizar rol";
@@ -243,6 +280,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         profile,
         roles,
+        primaryRole,
         isLoading,
         hasRole,
         login,

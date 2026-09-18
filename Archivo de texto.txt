@@ -1,0 +1,163 @@
+He lanzado pnpm lint para verificar la calidad de código y el linter en el
+  proyecto. Esperando los resultados...
+▸ Thought for 14s
+  `pnpm lint` and `pnpm build` completed successfully, indicating a clean cod...
+  El plan de implementación plan-implementation-modelo-negocio(1.md) ha sido
+  completado en su totalidad. Tanto el build de producción (pnpm build) como
+  el linter (pnpm lint) compilaron con código de salida 0 sin ningún error.
+  ──────
+  ### Resumen de Cumplimiento del Checklist (Sección 8 del Plan)
+
+   # │ Tarea del Plan             │   Estado    │ Detalle de Implementación
+  ───┼────────────────────────────┼─────────────┼─────────────────────────────
+   1 │ Migración SQL:             │     ✅      │ En
+     │ orders.price nullable +    │ Completado  │
+20260918033000_pricing_model_v2.sql
+     │ desglose                   │             │         : price pasó a ser
+     │                            │             │ nullable, se añadieron
+     │                            │             │ freelancer_price
+     │                            │             │ NUMERIC(10,2) y
+     │                            │             │ commission_amount
+     │                            │             │ NUMERIC(10,2).
+   2 │ Función SQL                │     ✅      │ Función SECURITY DEFINER
+     │ activate_order_payment()   │ Completado  │ que valida precio mínimo de
+     │                            │             │ Bs 20, pertenencia de la
+     │                            │             │ orden al freelancer
+     │                            │             │ autenticado, calcula la
+     │                            │             │ comisión del 12%, actualiza
+     │                            │             │ freelancer_price,
+      │                           │               │ actualiza
+      │                           │               │ freelancer_price,
+      │                           │               │ commission_amount, price
+      │                           │               │ = total, y cambia estado
+      │                           │               │ a esperando_pago.
+   3  │ Actualizar                │ ✅ Completado │ Actualizada para no
+      │ process_simulated_escrow_ │               │ deducir el 10% al
+      │ payment()                 │               │ freelancer: toma
+      │                           │               │ directamente v_fee :=
+      │                           │               │ v_order.commission_amount
+      │                           │               │ y v_net :=
+      │                           │               │ v_order.freelancer_price,
+      │                           │               │ garantizando que el
+      │                           │               │ freelancer reciba el 100%
+      │                           │               │ de su tarifa acordada.
+   4  │ Actualizar default de     │ ✅ Completado │ Se actualizó el DEFAULT a
+      │ platform_fees a 12%       │               │ 12.00 en la tabla
+      │                           │               │ platform_fees.
+   5  │ Lógica en @freelance/core │ ✅ Completado │ En index.ts:
+      │ (tasas, BOB, helpers)     │               │ DEFAULT_PLATFORM_FEE_RATE
+      │                           │               │ = 0.12,
+      │                           │               │ MIN_FREELANCER_PRICE =
+      │                           │               │ 20, formatCurrency
+      │                           │               │ migrado a es-BO (BOB), y
+      │                           │               │ se añadió index.ts:33-42.
+   6  │ @freelance/api:           │ ✅ Completado │ En orders.api.ts:
+      │ createOrder y             │               │ orders.api.ts:61-86
+      │ activateOrderPayment      │               │ inserta sin price en
+      │                           │               │ estado pendiente_acuerdo.
+      │                           │               │ orders.api.ts:88-100
+      │                           │               │ invoca la RPC
+      │                           │               │ activate_order_payment.
+   7  │ Ajustes en                │ ✅ Completado │ En index.ts y
+      │ @freelance/types          │               │ database.types.ts: price:
+      │                           │               │ number | null,
+      │                           │               │ freelancerPrice?: number
+      │                           │               │ | null,
+      │                           │               │ commissionAmount?: number
+      │                           │               │ | null,
+      │                           │               │ CreateOrderPayload sin
+      │                           │               │ precio obligatorio.
+   8  │ ServiceForm.tsx           │ ✅ Completado │ En ServiceForm.tsx: Label
+      │                           │               │ cambiado a "Precio desde
+      │                           │               │ (Bs)" con mensaje
+      │                           │               │ explicativo de precio
+      │                           │               │ orientativo. Se removió
+      │                           │               │ por completo la sección y
+      │                           │               │ estados de paquetes
+      │                           │               │ (Basic/Standard/Premium).
+   9  │ ServiceCard.tsx y         │ ✅ Completado │ En ServiceCard.tsx y
+      │ ServiceDetail.tsx         │               │ ServiceDetail.tsx:
+      │                           │               │ visualización "Desde Bs
+      │                           │               │ X", sin selector de
+      │                           │               │ paquetes ni parámetros
+      │                           │               │ ?tier=.
+   10 │ OrderRequestPage.tsx      │ ✅ Completado │ En OrderRequestPage.tsx:
+      │                           │               │ se removió el campo donde
+      │                           │               │ el cliente fijaba el
+      │                           │               │ precio. Crea órdenes
+      │                           │               │ directas en
+      │                           │               │ pendiente_acuerdo sin
+      │                           │               │ precio, mostrando el
+      │                           │               │ "Desde Bs X" del servicio
+      │                           │               │ solo como referencia.
+   11 │ OrderDetailPage.tsx +     │ ✅ Completado │ Creado
+      │ SetFinalPricePanel.tsx    │               │ SetFinalPricePanel.tsx
+      │                           │               │ con input interactivo
+      │                           │               │ (mínimo Bs 20), preview
+      │                           │               │ dinámico en vivo (Tu
+      │                           │               │ ganancia neta, Comisión
+      │                           │               │ plataforma 12%, Total que
+      │                           │               │ pagará el cliente). En
+      │                           │               │ OrderDetailPage.tsx, la
+      │                           │               │ ficha "Condiciones del
+      │                           │               │ Acuerdo" muestra el
+      │                           │               │ desglose exacto sin
+      │                           │               │ deducir comisiones al
+      │                           │               │ freelancer.
+   12 │ useOrderDetail.ts y       │ ✅ Completado │ En useOrderDetail.ts:
+      │ useOrders.ts              │               │ activatePayment(freelance
+      │                           │               │ rPrice: number). En
+      │                           │               │ useOrders.ts: soporte
+      │                           │               │ completo para
+      │                           │               │ freelancerPrice,
+      │                           │               │ commissionAmount y price
+      │                           │               │ null-safe.
+   13 │ Limpieza de literales $ / │ ✅ Completado │ Se sustituyeron todos los
+      │ USD                       │               │ textos y símbolos en duro
+      │                           │               │ de dólares por
+      │                           │               │ formatCurrency en
+      │                           │               │ Bolivianos a lo largo de
+      │                           │               │ toda la plataforma
+      │                           │               │ (PaymentModal.tsx,
+      │                           │               │ EscrowStatusBadge.tsx,
+      │                           │               │ ChatWindow.tsx,
+      │                           │               │ DisputeThread.tsx,
+      │                           │               │ DisputeResolutionModal.tsx
+      │                           │               │  , DisputesQueuePage.tsx,
+      │                           │               │ PayoutHistory.tsx, etc.).
+   14 │ Decisión y ajuste en      │ ✅ Completado │ Se actualizó en
+      │ calculateDisputeSplit     │               │ index.ts:44-63: en caso
+      │                           │               │ de disputa, el split se
+      │                           │               │ calcula sobre
+      │                           │               │ freelancerPrice sin
+      │                           │               │ cobrarle ni deducirle
+      │                           │               │ comisión al freelancer
+      │                           │               │ sobre su resolución neta.
+   15 │ Compilación y             │ ✅ Completado │ Ejecutados exitosamente
+      │ verificación técnica      │               │ pnpm build y pnpm lint en
+      │                           │               │ todos los 5 paquetes del
+      │                           │               │ monorepo
+      │                           │               │ (@freelance/types,
+      │                           │               │ @freelance/core,
+      │                           │               │ @freelance/api,
+      │                           │               │ @freelance/ui y web).
+  ──────
+  ### Flujo Completo Operativo
+
+  1. Catálogo y Creación: Todo servicio se muestra con precio informativo
+  orientativo "Desde Bs X". Ya no existen paquetes de servicio.
+  2. Solicitud de Orden: El cliente describe sus necesidades y envía el pedido
+  sin colocar ningún precio; la orden se crea en estado pendiente_acuerdo con
+  price = null.
+  3. Fijación del Precio: El freelancer accede a la orden y en
+  SetFinalPricePanel.tsx define su tarifa neta (ej. Bs 1000). En vivo
+  visualiza:
+      • Su ganancia neta: Bs 1.000,00 (recibe el 100%).
+      • Comisión de la plataforma (12%): Bs 120,00.
+      • Total que pagará el cliente: Bs 1.120,00.
+  4. Activación y Custodia Escrow: Al confirmar, la orden pasa a
+  esperando_pago. El cliente deposita Bs 1.120,00 en Escrow.
+  5. Entrega y Liberación: Al aprobar la entrega, la función SQL transfiere
+  exactamente los Bs 1.000,00 netos al freelancer y registra los Bs 120,00
+  como ingreso de comisión de la plataforma.
+

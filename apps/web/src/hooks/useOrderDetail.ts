@@ -22,7 +22,9 @@ interface RawOrderDetailItem {
   package_id: string | null;
   title: string;
   description: string;
-  price: number | string;
+  price: number | string | null;
+  freelancer_price?: number | string | null;
+  commission_amount?: number | string | null;
   delivery_days: number;
   status: OrderWithDetails["status"];
   agreed_at: string | null;
@@ -109,7 +111,9 @@ export function useOrderDetail(orderId: string | undefined) {
           packageId: item.package_id,
           title: item.title,
           description: item.description,
-          price: Number(item.price),
+          price: item.price !== null && item.price !== undefined ? Number(item.price) : null,
+          freelancerPrice: item.freelancer_price !== null && item.freelancer_price !== undefined ? Number(item.freelancer_price) : null,
+          commissionAmount: item.commission_amount !== null && item.commission_amount !== undefined ? Number(item.commission_amount) : null,
           deliveryDays: item.delivery_days,
           status: item.status,
           agreedAt: item.agreed_at,
@@ -183,14 +187,14 @@ export function useOrderDetail(orderId: string | undefined) {
   }, [fetchOrderDetail]);
 
   // Acción: Activar Pago (Solo Freelancer)
-  const activatePayment = async () => {
+  const activatePayment = async (freelancerPrice: number) => {
     if (!order || !user) return { success: false, error: "No autorizado" };
     setActionLoading(true);
     try {
       const { error: aErr } = await activateOrderPayment(
         supabase,
         order.id,
-        user.id
+        freelancerPrice
       );
       if (aErr) throw aErr;
       await fetchOrderDetail();

@@ -22,13 +22,6 @@ export default function ServiceForm() {
   const [coverImage, setCoverImage] = useState("");
   const [status, setStatus] = useState<"active" | "paused">("active");
 
-  const [includePackages, setIncludePackages] = useState(false);
-  const [standardTitle, setStandardTitle] = useState("Paquete Estándar");
-  const [standardDesc, setStandardDesc] = useState("Entrega completa con revisiones");
-  const [premiumTitle, setPremiumTitle] = useState("Paquete Premium");
-  const [premiumDesc, setPremiumDesc] = useState("Entrega prioritaria y soporte extendido");
-  const [premiumPrice, setPremiumPrice] = useState("");
-
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -86,35 +79,6 @@ export default function ServiceForm() {
           navigate(`/services/${id}`);
         }
       } else {
-        const packagesPayload = includePackages
-          ? [
-              {
-                tier: "basico" as const,
-                title: "Paquete Básico",
-                description: "Alcance básico esencial",
-                price: parseFloat(price),
-                delivery_days: parseInt(deliveryDays, 10),
-                revisions: 1,
-              },
-              {
-                tier: "estandar" as const,
-                title: standardTitle,
-                description: standardDesc,
-                price: Number((parseFloat(price) * 1.5).toFixed(2)),
-                delivery_days: parseInt(deliveryDays, 10),
-                revisions: 2,
-              },
-              {
-                tier: "premium" as const,
-                title: premiumTitle,
-                description: premiumDesc,
-                price: premiumPrice ? parseFloat(premiumPrice) : Number((parseFloat(price) * 2.2).toFixed(2)),
-                delivery_days: Math.max(1, parseInt(deliveryDays, 10) - 1),
-                revisions: 3,
-              },
-            ]
-          : undefined;
-
         const { data: newService, error } = await createService(
           supabase,
           {
@@ -126,8 +90,7 @@ export default function ServiceForm() {
             delivery_days: parseInt(deliveryDays, 10),
             cover_image: coverImage || null,
             status,
-          },
-          packagesPayload
+          }
         );
 
         setSubmitting(false);
@@ -218,7 +181,7 @@ export default function ServiceForm() {
         <Card title="Precios y Plazos de Entrega">
           <div className="grid sm:grid-cols-2 gap-4">
             <Input
-              label="Precio Base (USD)"
+              label="Precio desde (Bs)"
               type="number"
               min="5"
               step="1"
@@ -226,7 +189,7 @@ export default function ServiceForm() {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               required
-              helperText="Precio inicial o para el paquete básico."
+              helperText="Es un precio orientativo. El precio final se acuerda con cada cliente antes de activar el pago."
             />
 
             <Input
@@ -267,84 +230,6 @@ export default function ServiceForm() {
             </div>
           </div>
         </Card>
-
-        {!isEditing && (
-          <Card
-            title="Niveles de Paquetes (Opcional)"
-            description="Ofrece opciones Básico, Estándar y Premium para que los clientes elijan el alcance adecuado"
-          >
-            <div className="space-y-4">
-              <label className="flex items-center gap-2 text-sm font-semibold text-slate-800 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includePackages}
-                  onChange={(e) => setIncludePackages(e.target.checked)}
-                  className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4"
-                />
-                <span>Habilitar 3 niveles de servicio (Básico / Estándar / Premium)</span>
-              </label>
-
-              {includePackages && (
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-4 text-xs">
-                  <p className="text-slate-600">
-                    Personaliza los 3 niveles de servicio para tus clientes:
-                  </p>
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1.5">
-                      <span className="font-bold block text-slate-900">1. Básico</span>
-                      <span className="text-slate-500 block">${price || "0"} USD · {deliveryDays} días</span>
-                      <p className="text-[11px] text-slate-400">Alcance base esencial</p>
-                    </div>
-
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
-                      <span className="font-bold block text-slate-900">2. Estándar</span>
-                      <span className="text-slate-500 block">${price ? (parseFloat(price) * 1.5).toFixed(0) : "0"} USD</span>
-                      <input
-                        type="text"
-                        value={standardTitle}
-                        onChange={(e) => setStandardTitle(e.target.value)}
-                        placeholder="Título Estándar"
-                        className="w-full rounded border border-slate-200 px-2 py-1 text-xs"
-                      />
-                      <input
-                        type="text"
-                        value={standardDesc}
-                        onChange={(e) => setStandardDesc(e.target.value)}
-                        placeholder="Descripción"
-                        className="w-full rounded border border-slate-200 px-2 py-1 text-xs"
-                      />
-                    </div>
-
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
-                      <span className="font-bold block text-slate-900">3. Premium</span>
-                      <input
-                        type="number"
-                        value={premiumPrice}
-                        onChange={(e) => setPremiumPrice(e.target.value)}
-                        placeholder={`Precio USD (${price ? (parseFloat(price) * 2.2).toFixed(0) : "0"})`}
-                        className="w-full rounded border border-slate-200 px-2 py-1 text-xs font-semibold"
-                      />
-                      <input
-                        type="text"
-                        value={premiumTitle}
-                        onChange={(e) => setPremiumTitle(e.target.value)}
-                        placeholder="Título Premium"
-                        className="w-full rounded border border-slate-200 px-2 py-1 text-xs"
-                      />
-                      <input
-                        type="text"
-                        value={premiumDesc}
-                        onChange={(e) => setPremiumDesc(e.target.value)}
-                        placeholder="Descripción"
-                        className="w-full rounded border border-slate-200 px-2 py-1 text-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <Link to="/freelancer/dashboard">

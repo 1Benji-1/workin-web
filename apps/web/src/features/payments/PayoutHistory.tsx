@@ -1,5 +1,6 @@
 import React from "react";
 import { Badge, Card } from "@freelance/ui";
+import { formatCurrency } from "@freelance/core";
 import type { PayoutWithOrder } from "@freelance/api";
 
 interface PayoutHistoryProps {
@@ -82,7 +83,7 @@ export const PayoutHistory: React.FC<PayoutHistoryProps> = ({ payouts, loading }
                     {p.providerPayoutId || "N/A"}
                   </td>
                   <td className="py-3 px-3 text-right whitespace-nowrap font-black text-emerald-600 text-sm">
-                    +${p.amount.toFixed(2)} USD
+                    +{formatCurrency(p.amount)}
                   </td>
                   <td className="py-3 px-3 text-center whitespace-nowrap">
                     <Badge

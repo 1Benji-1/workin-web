@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useOrders } from "../../hooks/useOrders";
-import { getOrderStatusMeta } from "@freelance/core";
+import { getOrderStatusMeta, formatCurrency } from "@freelance/core";
 import { useAuth } from "../../shared/context/AuthContext";
 import { Button, Badge } from "@freelance/ui";
 
@@ -127,8 +127,8 @@ export default function OrdersListPage() {
                 </div>
 
                 <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-                  <span className="text-xl font-black text-primary">
-                    ${order.price} USD
+                  <span className="text-base sm:text-lg font-black text-primary">
+                    {order.price !== null ? formatCurrency(order.price) : "Por acordar"}
                   </span>
 
                   <Link to={`/orders/${order.id}`}>

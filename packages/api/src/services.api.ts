@@ -100,7 +100,7 @@ export async function getServiceById(
     .from("services")
     .select(`
       *,
-      freelancer:profiles!services_freelancer_id_fkey(id, full_name, avatar_url, headline, bio, skills, rating:rating),
+      freelancer:profiles!services_freelancer_id_fkey(id, full_name, avatar_url, headline, bio, skills, rating:rating_avg),
       category:categories!services_category_id_fkey(id, name, slug, icon),
       packages:service_packages(*)
     `)

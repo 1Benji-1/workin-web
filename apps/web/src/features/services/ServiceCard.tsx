@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import type { ServiceWithFreelancer } from "@freelance/types";
 import { Badge } from "@freelance/ui";
+import { formatCurrency } from "@freelance/core";
 
 interface ServiceCardProps {
   service: ServiceWithFreelancer;
@@ -87,8 +88,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
             Desde
           </span>
           <span className="text-base font-extrabold text-primary">
-            ${service.price}{" "}
-            <span className="text-xs font-normal text-slate-500">USD</span>
+            {formatCurrency(service.price)}
           </span>
         </div>
 

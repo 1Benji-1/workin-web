@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Card, Badge } from "@freelance/ui";
-import { calculateEscrowBreakdown } from "@freelance/core";
+import { formatCurrency } from "@freelance/core";
 import type { OrderWithDetails } from "@freelance/types";
 
 interface PaymentModalProps {
@@ -22,7 +22,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   if (!isOpen) return null;
 
-  const breakdown = calculateEscrowBreakdown(order.price);
+  const freelancerPrice = order.freelancerPrice ?? (order.price ? order.price / 1.12 : 0);
+  const commissionAmount = order.commissionAmount ?? (order.price ? order.price - freelancerPrice : 0);
+  const total = order.price ?? (freelancerPrice + commissionAmount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,29 +78,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
           <div className="space-y-2 text-xs">
             <div className="flex justify-between text-slate-600">
-              <span>Precio acordado del servicio:</span>
-              <span className="font-semibold text-slate-800">${breakdown.total.toFixed(2)} USD</span>
+              <span>Precio acordado del profesional:</span>
+              <span className="font-semibold text-slate-800">{formatCurrency(freelancerPrice)}</span>
+            </div>
+
+            <div className="flex justify-between text-slate-600">
+              <span>Comisión de plataforma (12%):</span>
+              <span className="font-semibold text-slate-800">+{formatCurrency(commissionAmount)}</span>
             </div>
 
             <div className="flex justify-between text-slate-600">
               <span>Protección y custodia de fondos (Escrow):</span>
-              <span className="text-emerald-700 font-semibold">Incluida ($0.00)</span>
+              <span className="text-emerald-700 font-semibold">Incluida</span>
             </div>
 
             <div className="flex justify-between text-slate-500 text-[11px] pt-1 border-t border-slate-200">
-              <span>Comisión de plataforma ({breakdown.feePercentage}% retenida al profesional):</span>
-              <span>-${breakdown.platformFee.toFixed(2)} USD</span>
-            </div>
-
-            <div className="flex justify-between text-slate-500 text-[11px]">
-              <span>Monto neto que recibirá el freelancer al aprobar:</span>
-              <span className="font-medium text-slate-700">${breakdown.netAmount.toFixed(2)} USD</span>
+              <span>Remuneración que recibirá el freelancer al aprobar entrega (100%):</span>
+              <span className="font-medium text-slate-700">{formatCurrency(freelancerPrice)}</span>
             </div>
 
             <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900">
               <span className="font-bold text-sm">Total a pagar ahora:</span>
               <span className="text-2xl font-black text-primary">
-                ${breakdown.total.toFixed(2)} <span className="text-xs font-normal text-slate-500">USD</span>
+                {formatCurrency(total)}
               </span>
             </div>
           </div>
@@ -226,7 +228,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             >
               {isProcessing
                 ? "Asegurando Fondos..."
-                : `🛡️ Depositar $${breakdown.total.toFixed(2)} USD en Escrow`}
+                : `🛡️ Depositar ${formatCurrency(total)} en Escrow`}
             </Button>
           </div>
         </form>

@@ -1,34 +1,30 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCategories } from "../../hooks/useCategories";
-import { Badge, Button } from "@freelance/ui";
-import { NotificationBell } from "../../features/notifications";
+import { Button } from "@freelance/ui";
 
 export function Navbar() {
-  const { user, profile, roles, logout } = useAuth();
+  const { user, roles, primaryRole } = useAuth();
   const { categories } = useCategories();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const dashboardUrl =
+    primaryRole === "freelancer" || roles.includes("freelancer")
+      ? "/freelancer/dashboard"
+      : "/client/dashboard";
 
-  const isFreelancer = roles.includes("freelancer");
-  const isSupportOrAdmin = roles.includes("admin") || roles.includes("soporte");
-
-  // Close dropdown on route change or click outside
+  // Cerrar menús al cambiar de ruta
   useEffect(() => {
     setCategoriesOpen(false);
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Cerrar dropdown de categorías al hacer clic afuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -42,7 +38,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
-        {/* Logo & Main Nav */}
+        {/* Logo & Dropdown de Categorías */}
         <div className="flex items-center gap-6 md:gap-8">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary tracking-tight">
             <span className="w-8 h-8 rounded-lg bg-primary text-accent flex items-center justify-center font-black text-lg shadow-sm">
@@ -51,17 +47,13 @@ export function Navbar() {
             <span>WorkIn</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <Link to="/" className="hover:text-primary transition-colors">
-              Inicio
-            </Link>
-
-            {/* Categorías Dropdown */}
+          <nav className="hidden md:flex items-center">
+            {/* Dropdown de Categorías */}
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
-                className={`flex items-center gap-1.5 transition-colors ${
+                className={`flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors ${
                   categoriesOpen ? "text-primary font-semibold" : "hover:text-primary"
                 }`}
                 aria-expanded={categoriesOpen}
@@ -111,137 +103,33 @@ export function Navbar() {
                 </div>
               )}
             </div>
-
-            {/* Panel Freelancer */}
-            {user && (
-              <Link
-                to="/freelancer/dashboard"
-                className={`flex items-center gap-1.5 transition-colors ${
-                  isFreelancer ? "hover:text-primary text-slate-700" : "text-slate-400 hover:text-slate-600"
-                }`}
-              >
-                <span>Panel Freelancer</span>
-                {!isFreelancer && (
-                  <Badge variant="neutral" size="sm">
-                    Inactivo
-                  </Badge>
-                )}
-              </Link>
-            )}
-
-            {/* Mis Pedidos */}
-            {user && (
-              <Link
-                to="/orders"
-                className="hover:text-primary transition-colors"
-              >
-                Mis Pedidos
-              </Link>
-            )}
-
-            {/* Disputas */}
-            {user && (
-              <Link
-                to="/disputes"
-                className="hover:text-primary transition-colors"
-              >
-                Disputas
-              </Link>
-            )}
-
-            {/* Mensajes (Fase 7) */}
-            {user && (
-              <Link
-                to="/messages"
-                className="hover:text-primary transition-colors"
-              >
-                Mensajes
-              </Link>
-            )}
-
-            {/* Backoffice / Soporte (Fase 9) */}
-            {user && isSupportOrAdmin && (
-              <Link
-                to="/admin"
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 font-bold transition-colors bg-red-50 hover:bg-red-100/80 px-2.5 py-1 rounded-lg border border-red-200 text-xs shadow-xs"
-              >
-                <span>🛡️ Backoffice</span>
-              </Link>
-            )}
           </nav>
         </div>
 
-        {/* User / Auth CTA */}
+        {/* Zona derecha: Sesión / Dashboard */}
         <div className="flex items-center gap-3">
-          {/* Publicar servicio CTA (solo para freelancers) */}
-          {isFreelancer && (
-            <Link to="/services/new" className="hidden sm:inline-flex">
-              <Button size="sm" variant="outline" className="text-xs border-accent text-accent hover:bg-accent/10 font-semibold">
-                + Publicar servicio
+          {user ? (
+            <Link to={dashboardUrl}>
+              <Button size="sm" variant="primary" className="text-xs py-1.5 px-4 font-semibold">
+                Dashboard
               </Button>
             </Link>
-          )}
-
-          {user ? (
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {/* Campanita de Notificaciones (Fase 8) */}
-              <NotificationBell />
-
-              {/* Badges de Roles */}
-              <div className="hidden sm:flex items-center gap-1.5">
-                {roles.includes("admin") && (
-                  <Badge variant="danger" size="sm">
-                    Admin
-                  </Badge>
-                )}
-                {roles.includes("soporte") && (
-                  <Badge variant="primary" size="sm">
-                    Soporte
-                  </Badge>
-                )}
-                {roles.includes("cliente") && !roles.includes("admin") && (
-                  <Badge variant="neutral" size="sm">
-                    Cliente
-                  </Badge>
-                )}
-                {roles.includes("freelancer") && (
-                  <Badge variant="accent" size="sm">
-                    Freelancer
-                  </Badge>
-                )}
-              </div>
-
-              {/* Botón Mi Perfil */}
-              <Link to="/profile">
-                <Button variant="outline" className="text-xs py-1.5 px-3 bg-white text-slate-800 border-slate-200 hover:bg-slate-50">
-                  {profile?.fullName || user.email?.split("@")[0] || "Mi Perfil"}
-                </Button>
-              </Link>
-
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors px-2 py-1"
-              >
-                Salir
-              </button>
-            </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login">
-                <Button className="text-xs py-1.5 px-3 bg-transparent text-slate-700 hover:bg-slate-100 shadow-none">
+                <Button variant="outline" size="sm" className="text-xs py-1.5 px-3 font-medium">
                   Iniciar sesión
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="text-xs py-1.5 px-3">
+                <Button variant="primary" size="sm" className="text-xs py-1.5 px-3 font-semibold">
                   Registrarse
                 </Button>
               </Link>
             </div>
           )}
 
-          {/* Mobile hamburger button */}
+          {/* Botón menú mobile */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -259,60 +147,49 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Menú Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3">
-          <Link to="/" className="block text-sm font-medium text-slate-700 py-1">
-            Inicio
-          </Link>
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-xs font-semibold text-slate-400 uppercase">Categorías</span>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-4">
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+              Categorías
+            </span>
+            <div className="grid grid-cols-2 gap-2">
               {categories.map((c) => (
                 <Link
                   key={c.id}
                   to={`/categories/${c.slug}`}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 text-xs text-slate-700"
+                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 text-xs text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <span>{c.icon}</span>
-                  <span className="truncate">{c.name}</span>
+                  <span className="truncate font-medium">{c.name}</span>
                 </Link>
               ))}
             </div>
           </div>
-          {isFreelancer && (
-            <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
-              <Link to="/services/new">
-                <Button size="sm" className="w-full">
-                  + Publicar servicio
+
+          <div className="pt-2 border-t border-slate-100">
+            {user ? (
+              <Link to={dashboardUrl} className="block">
+                <Button size="sm" className="w-full text-xs py-2">
+                  Ir al Dashboard
                 </Button>
               </Link>
-              <Link to="/freelancer/dashboard" className="block text-sm font-medium text-slate-700 py-1">
-                Panel Freelancer
-              </Link>
-            </div>
-          )}
-          {user && (
-            <>
-              <Link to="/orders" className="block text-sm font-medium text-slate-700 py-1 border-t border-slate-100 pt-2">
-                Mis Pedidos
-              </Link>
-              <Link to="/disputes" className="block text-sm font-medium text-slate-700 py-1">
-                Disputas
-              </Link>
-              <Link to="/messages" className="block text-sm font-medium text-slate-700 py-1">
-                Mensajes
-              </Link>
-              <Link to="/notifications" className="block text-sm font-medium text-slate-700 py-1">
-                Notificaciones
-              </Link>
-              {isSupportOrAdmin && (
-                <Link to="/admin" className="block text-sm font-bold text-red-600 py-1">
-                  🛡️ Panel Backoffice / Soporte
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link to="/login" className="block">
+                  <Button variant="outline" size="sm" className="w-full text-xs py-2">
+                    Iniciar sesión
+                  </Button>
                 </Link>
-              )}
-            </>
-          )}
+                <Link to="/register" className="block">
+                  <Button size="sm" className="w-full text-xs py-2">
+                    Registrarse
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>

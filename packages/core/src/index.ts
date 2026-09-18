@@ -1,7 +1,11 @@
 // Lógica de negocio pura (sin UI, sin llamadas directas a Supabase).
 // Ej: reglas de escrow, cálculo de comisiones, validaciones de estado de orden.
 
-export function calculatePlatformFee(amount: number, feePercentage = 0.1): number {
+export const DEFAULT_PLATFORM_FEE_PERCENT = 12; // 12%
+export const DEFAULT_PLATFORM_FEE_RATE = 0.12; // 0.12
+export const MIN_FREELANCER_PRICE = 20; // Bs 20 mínimo
+
+export function calculatePlatformFee(amount: number, feePercentage = DEFAULT_PLATFORM_FEE_RATE): number {
   return Number((amount * feePercentage).toFixed(2));
 }
 
@@ -49,9 +53,6 @@ export function canFreelancerDeliver(
   return userId === orderFreelancerId && orderStatus === "en_progreso";
 }
 
-export const DEFAULT_PLATFORM_FEE_PERCENT = 10; // 10%
-export const DEFAULT_PLATFORM_FEE_RATE = 0.10; // 0.10
-
 export interface EscrowBreakdown {
   total: number;
   platformFee: number;
@@ -70,6 +71,28 @@ export function calculateEscrowBreakdown(
     total: numericAmount,
     platformFee,
     netAmount,
+    feePercentage: feePercentage * 100,
+  };
+}
+
+export interface ClientTotalCalculation {
+  freelancerPrice: number;
+  commission: number;
+  total: number;
+  feePercentage: number;
+}
+
+export function calculateClientTotal(
+  freelancerPrice: number,
+  feePercentage = DEFAULT_PLATFORM_FEE_RATE
+): ClientTotalCalculation {
+  const numericPrice = Number(freelancerPrice) || 0;
+  const commission = Number((numericPrice * feePercentage).toFixed(2));
+  const total = Number((numericPrice + commission).toFixed(2));
+  return {
+    freelancerPrice: numericPrice,
+    commission,
+    total,
     feePercentage: feePercentage * 100,
   };
 }
@@ -628,18 +651,19 @@ export interface DisputeSplitCalculation {
 }
 
 export function calculateDisputeSplit(
-  grossAmount: number,
-  freelancerPercentage: number,
-  platformFeeRate = 0.1
+  freelancerPrice: number,
+  freelancerPercentage: number
 ): DisputeSplitCalculation {
   const safePct = Math.max(0, Math.min(100, Number(freelancerPercentage) || 0));
   const clientPct = 100 - safePct;
-  const safeGross = Math.max(0, Number(grossAmount) || 0);
+  const safeGross = Math.max(0, Number(freelancerPrice) || 0);
 
   const freelancerGross = Number(((safeGross * safePct) / 100).toFixed(2));
   const clientRefund = Number((safeGross - freelancerGross).toFixed(2));
-  const platformFee = Number((freelancerGross * platformFeeRate).toFixed(2));
-  const freelancerNet = Number((freelancerGross - platformFee).toFixed(2));
+  // El freelancer conserva el 100% de su porción en el veredicto;
+  // la comisión ya fue asumida por el cliente al momento de depositar.
+  const platformFee = 0;
+  const freelancerNet = freelancerGross;
 
   return {
     grossAmount: safeGross,
@@ -654,9 +678,9 @@ export function calculateDisputeSplit(
 
 export function formatCurrency(amount: number | string | null | undefined): string {
   const num = Number(amount) || 0;
-  return new Intl.NumberFormat("es-US", {
+  return new Intl.NumberFormat("es-BO", {
     style: "currency",
-    currency: "USD",
+    currency: "BOB",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(num);

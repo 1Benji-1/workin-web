@@ -4,6 +4,7 @@ import {
   getDisputeStatusMeta,
   getDisputeReasonLabel,
   getDisputeDecisionLabel,
+  formatCurrency,
 } from "@freelance/core";
 import { DisputeResolutionModal } from "./DisputeResolutionModal";
 import type { DisputeWithDetails, DisputeDecision } from "@freelance/types";
@@ -92,7 +93,7 @@ export const DisputeThread: React.FC<DisputeThreadProps> = ({
         <div className="text-[11px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-rose-200/60">
           <span>🔒</span>
           <span>
-            Fondos en custodia protegidos ($<strong>{orderPrice.toFixed(2)} USD</strong>). Ninguna parte podrá disponer del saldo hasta que concluya la mediación.
+            Fondos en custodia protegidos (<strong>{formatCurrency(orderPrice)}</strong>). Ninguna parte podrá disponer del saldo hasta que concluya la mediación.
           </span>
         </div>
       </div>

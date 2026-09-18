@@ -70,13 +70,13 @@ export function FilterPanel({
       {/* Rango de Precio */}
       <div className="space-y-2">
         <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-          Rango de Precio (USD)
+          Rango de Precio (Bs)
         </label>
         <div className="grid grid-cols-2 gap-2">
           <input
             type="number"
             min="0"
-            placeholder="Min $"
+            placeholder="Min Bs"
             value={filters.minPrice ?? ""}
             onChange={(e) =>
               onChange({ minPrice: e.target.value ? Number(e.target.value) : undefined })
@@ -86,7 +86,7 @@ export function FilterPanel({
           <input
             type="number"
             min="0"
-            placeholder="Max $"
+            placeholder="Max Bs"
             value={filters.maxPrice ?? ""}
             onChange={(e) =>
               onChange({ maxPrice: e.target.value ? Number(e.target.value) : undefined })
